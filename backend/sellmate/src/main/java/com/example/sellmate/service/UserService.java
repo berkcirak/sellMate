@@ -94,7 +94,15 @@ public class UserService {
         }
         return "fail";
     }
+    public User getUserProfile(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails){
+            String username = (((UserDetails) authentication.getPrincipal()).getUsername());
+            return userRepository.findByUsername(username);
+        }
+        throw new RuntimeException("User not found");
+    }
 
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tbl_users", uniqueConstraints = {
@@ -23,6 +24,8 @@ public class User {
     private String password;
     private String profilePicture;
     private String bio;
+    @OneToMany
+    private List<Product> productList;
     private LocalDateTime joinedDate;
 
     public User(int id, String username, String email, String name, String surname, String password, String profilePicture, String bio, LocalDateTime joinedDate) {

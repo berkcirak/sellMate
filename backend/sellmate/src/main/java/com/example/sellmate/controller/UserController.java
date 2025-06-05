@@ -29,6 +29,10 @@ public class UserController {
     public String loginUser(@RequestBody User user){
         return userService.verify(user);
     }
+    @GetMapping("/profile")
+    public User getUserProfile(){
+        return userService.getUserProfile();
+    }
     @PutMapping("/update/{userId}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int userId, @RequestBody UserDTO user) {
         User updatedUser = userService.updateUser(user, userId);
@@ -47,6 +51,7 @@ public class UserController {
     public void deleteUser(@PathVariable int userId){
         userService.deleteUser(userId);
     }
+
 
 
 }
