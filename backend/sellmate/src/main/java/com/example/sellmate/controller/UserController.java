@@ -1,12 +1,14 @@
 package com.example.sellmate.controller;
 
 import com.example.sellmate.entity.User;
+import com.example.sellmate.model.UserDTO;
 import com.example.sellmate.service.JWTService;
 import com.example.sellmate.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -22,6 +24,28 @@ public class UserController {
     public String createUser(@RequestBody User user){
         User createdUser = userService.createUser(user);
         return jwtService.generateToken(createdUser.getUsername());
+    }
+    @PostMapping("/login")
+    public String loginUser(@RequestBody User user){
+        return userService.verify(user);
+    }
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable int userId, @RequestBody UserDTO user) {
+        User updatedUser = userService.updateUser(user, userId);
+
+        // Eğer kullanıcı adını güncellemişse yeni token üret
+        String newToken = jwtService.generateToken(updatedUser.getUsername());
+
+        // Yeni token'ı frontend'e dön
+        Map<String, String> response = new HashMap<>();
+        response.put("token", newToken);
+        response.put("message", "Kullanıcı güncellendi.");
+
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/delete/{userId}")
+    public void deleteUser(@PathVariable int userId){
+        userService.deleteUser(userId);
     }
 
 

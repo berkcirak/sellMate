@@ -6,7 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tbl_users")
+@Table(name = "tbl_users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 public class User {
 
     @Id
@@ -14,15 +17,19 @@ public class User {
     @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", allocationSize = 1)
     private int id;
     private String username;
+    private String name;
+    private String surname;
     private String email;
     private String password;
     private String profilePicture;
     private String bio;
     private LocalDateTime joinedDate;
 
-    public User(int id, String username, String email, String password, String profilePicture, String bio, LocalDateTime joinedDate) {
+    public User(int id, String username, String email, String name, String surname, String password, String profilePicture, String bio, LocalDateTime joinedDate) {
         this.id = id;
         this.username = username;
+        this.name = name;
+        this.surname = surname;
         this.email = email;
         this.password = password;
         this.profilePicture = profilePicture;
@@ -47,6 +54,22 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getEmail() {
