@@ -15,6 +15,7 @@ public class Product {
     @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", allocationSize = 1)
     private int id;
     private String title;
+    @Lob
     private String description;
     private BigDecimal price;
     private String imageUrl;

@@ -1,11 +1,14 @@
 package com.example.sellmate.model;
 
+import jakarta.persistence.Lob;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ProductDTO {
     public String title;
+    @Lob
     public String description;
     public BigDecimal price;
     public String username;

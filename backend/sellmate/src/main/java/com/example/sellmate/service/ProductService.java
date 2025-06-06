@@ -26,4 +26,29 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product updateProduct(ProductDTO product, int productId){
+        User user = userService.getAuthenticatedUser();
+        Product theProduct = productRepository.findById(productId).orElseThrow(()-> new RuntimeException("Product not found"));
+        if (user.getId() != theProduct.getOwner().getId()){
+            throw new RuntimeException("You are not authorized for update this product");
+        }
+        if (product.getTitle() != null){
+            theProduct.setTitle(product.getTitle());
+        }
+        if (product.getDescription() != null){
+            theProduct.setDescription(product.getDescription());
+        }
+        if (product.getPrice() != null){
+            theProduct.setPrice(product.getPrice());
+        }
+        return productRepository.save(theProduct);
+    }
+    public void deleteProduct(int productId){
+        User user = userService.getAuthenticatedUser();
+        Product product = productRepository.findById(productId).orElseThrow(()->new RuntimeException("Product not found"));
+        if (user.getId() != product.getOwner().getId()){
+            throw new RuntimeException("You are not authorized for delete this product");
+        }
+        productRepository.deleteById(productId);
+    }
 }

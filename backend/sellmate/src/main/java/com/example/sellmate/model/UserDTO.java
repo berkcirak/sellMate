@@ -1,11 +1,14 @@
 package com.example.sellmate.model;
 
+import jakarta.persistence.Lob;
+
 public class UserDTO {
     public String username;
     public String name;
     public String surname;
     public String password;
     public String email;
+    @Lob
     public String bio;
     public String profilePicture;
 

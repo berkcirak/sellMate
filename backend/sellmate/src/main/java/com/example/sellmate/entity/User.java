@@ -23,6 +23,7 @@ public class User {
     private String email;
     private String password;
     private String profilePicture;
+    @Lob
     private String bio;
     @OneToMany
     private List<Product> productList;

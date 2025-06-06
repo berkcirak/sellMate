@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -33,6 +34,11 @@ public class UserController {
     public User getUserProfile(){
         return userService.getUserProfile();
     }
+    @GetMapping("/{userId}")
+    public Optional<User> getUserById(@PathVariable int userId){
+        return userService.getUserById(userId);
+    }
+
     @PutMapping("/update/{userId}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int userId, @RequestBody UserDTO user) {
         User updatedUser = userService.updateUser(user, userId);
