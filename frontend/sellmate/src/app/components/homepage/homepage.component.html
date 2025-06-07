@@ -1,0 +1,15 @@
+<mat-sidenav-container class="main-container">
+    <mat-sidenav mode="side" opened class="sidenav">
+        <mat-toolbar color="primary">Menü</mat-toolbar>
+        <mat-nav-list>
+            <a mat-list-item routerLink="/home/feed">Anasayfa</a>
+            <a mat-list-item routerLink="/home/explore">Arama</a>
+            <a mat-list-item routerLink="/home/messages">Mesajlar</a>
+            <a mat-list-item routerLink="/home/profile">Profil</a>
+        </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+        <router-outlet></router-outlet>
+    </mat-sidenav-content>
+</mat-sidenav-container>

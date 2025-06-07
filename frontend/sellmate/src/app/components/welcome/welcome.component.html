@@ -1,0 +1,38 @@
+<div class="login-page">
+  <mat-card class="login-box mat-elevation-z8">
+    <div class="logo">SellMate</div>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm" autocomplete="off">
+      <mat-form-field appearance="fill" class="input-field">
+        <mat-label>Kullanıcı adı</mat-label>
+        <input matInput type="text" name="username" [(ngModel)]="loginData.username" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="input-field">
+        <mat-label>Şifre</mat-label>
+        <input matInput type="password" name="password" [(ngModel)]="loginData.password" required />
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="login-button" [disabled]="!loginForm.valid">
+        Giriş yap
+      </button>
+
+      <div *ngIf="errorMessage" class="error-text">{{ errorMessage }}</div>
+
+      <div class="divider">
+        <span>YA DA</span>
+      </div>
+
+      <button mat-stroked-button color="accent" class="facebook-login">
+         Google ile Giriş Yap
+      </button>
+
+      <a class="forgot-password" href="#">Şifreni mi unuttun?</a>
+    </form>
+  </mat-card>
+
+  <mat-card class="signup-box mat-elevation-z0">
+    <span>Hesabın yok mu?</span>
+    <a class="signup-link" href="#">Kaydol</a>
+  </mat-card>
+</div>

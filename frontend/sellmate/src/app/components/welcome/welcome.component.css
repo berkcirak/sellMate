@@ -1,0 +1,89 @@
+.login-page {
+  background-color: #fafafa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-box {
+  width: 350px;
+  padding: 2rem;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.logo {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: #3f51b5;
+}
+
+.input-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.login-button {
+  width: 100%;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.error-text {
+  color: #f44336;
+  font-size: 13px;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  font-size: 13px;
+  color: #888;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #ccc;
+  margin: 0 0.5rem;
+}
+
+.facebook-login {
+  width: 100%;
+  font-weight: 500;
+  text-transform: none;
+}
+
+.forgot-password {
+  display: block;
+  margin-top: 1rem;
+  font-size: 13px;
+  color: #3f51b5;
+  text-decoration: none;
+}
+
+.signup-box {
+  width: 350px;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  text-align: center;
+  font-size: 14px;
+}
+
+.signup-link {
+  color: #3f51b5;
+  font-weight: 500;
+  margin-left: 5px;
+  text-decoration: none;
+}
