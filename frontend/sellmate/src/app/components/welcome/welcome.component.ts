@@ -32,7 +32,7 @@ export class WelcomeComponent {
     this.authService.login(this.loginData).subscribe((res: any) => {
       if(res) {
         localStorage.setItem('token', res);
-        this.router.navigate(['/home']);
+        this.router.navigate(['/feed']);
       }
     },
       error  => {

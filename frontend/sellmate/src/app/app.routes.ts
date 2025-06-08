@@ -1,19 +1,15 @@
 import { Routes } from '@angular/router';
 import { WelcomeComponent } from './components/welcome/welcome.component';
-import { HomepageComponent } from './components/homepage/homepage.component';
 import { FeedComponent } from './components/feed/feed.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { MessagesComponent } from './components/messages/messages.component';
+import { ExploreComponent } from './components/explore/explore.component';
 
 export const routes: Routes = [
 
-    { path: '', component: WelcomeComponent },
-    { path: 'home',
-      component: HomepageComponent,
-      children: [
-        { path: 'feed', loadComponent: () => import('./components/feed/feed.component').then(m => m.FeedComponent) },
-        { path: 'explore', loadComponent: () => import('./components/explore/explore.component').then(m => m.ExploreComponent) },
-        { path: 'messages', loadComponent: () => import('./components/messages/messages.component').then(m => m.MessagesComponent) },
-        { path: 'profile', loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent) },
-        { path: '', redirectTo: 'feed', pathMatch: 'full' }
-    ]  
-    }
+  { path: '', component: WelcomeComponent },
+  { path: 'feed', component: FeedComponent },
+  { path: 'explore', component: ExploreComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: 'messages', component: MessagesComponent }
 ];
