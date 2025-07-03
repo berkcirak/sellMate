@@ -1,5 +1,6 @@
 package com.example.sellmate.model;
 
+import com.example.sellmate.entity.Product;
 import jakarta.persistence.Lob;
 
 import java.math.BigDecimal;
@@ -13,6 +14,16 @@ public class ProductDTO {
     public BigDecimal price;
     public String username;
     public LocalDateTime createdTime;
+
+    public ProductDTO(Product product){
+        this.title=product.getTitle();
+        this.description=product.getDescription();
+        this.price=product.getPrice();
+        this.createdTime=product.getCreatedAt();
+        this.username=product.getOwner().getUsername();
+    }
+    public ProductDTO(){}
+
 
     public String getTitle() {
         return title;

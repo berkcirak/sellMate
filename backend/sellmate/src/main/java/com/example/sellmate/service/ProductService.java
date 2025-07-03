@@ -4,9 +4,13 @@ import com.example.sellmate.entity.Product;
 import com.example.sellmate.entity.User;
 import com.example.sellmate.model.ProductDTO;
 import com.example.sellmate.repository.ProductRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -26,7 +30,21 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product updateProduct(ProductDTO product, int productId){
+    public List<Product> getProducts(){
+        return productRepository.findAll();
+    }
+    public Optional<Product> getProductById(int productId){
+        return productRepository.findById(productId);
+    }
+    public List<ProductDTO> getProductsByOwner(){
+        User user = userService.getAuthenticatedUser();
+        List<Product> products = productRepository.findAllByOwnerId(user.getId());
+        return products.stream()
+                .map(ProductDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public ProductDTO updateProduct(ProductDTO product, int productId){
         User user = userService.getAuthenticatedUser();
         Product theProduct = productRepository.findById(productId).orElseThrow(()-> new RuntimeException("Product not found"));
         if (user.getId() != theProduct.getOwner().getId()){
@@ -41,7 +59,8 @@ public class ProductService {
         if (product.getPrice() != null){
             theProduct.setPrice(product.getPrice());
         }
-        return productRepository.save(theProduct);
+        productRepository.save(theProduct);
+        return new ProductDTO(theProduct);
     }
     public void deleteProduct(int productId){
         User user = userService.getAuthenticatedUser();
