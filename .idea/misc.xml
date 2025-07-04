@@ -4,9 +4,16 @@
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
-        <option value="$PROJECT_DIR$/sellmate/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/sellmate/pom.xml" />
+        <option value="$PROJECT_DIR$/mailservice/pom.xml" />
         <option value="$PROJECT_DIR$/mail-service/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/mail-service/pom.xml" />
+        <option value="$PROJECT_DIR$/mailservice/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_20" default="true" project-jdk-name="20" project-jdk-type="JavaSDK">

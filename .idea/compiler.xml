@@ -6,14 +6,18 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="mail-service" />
         <module name="sellmate" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="mail-service" target="17" />
+      <module name="mailservice" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="mail-service" options="-parameters" />
+      <module name="mailservice" options="-parameters" />
       <module name="sellmate" options="-parameters" />
     </option>
   </component>
