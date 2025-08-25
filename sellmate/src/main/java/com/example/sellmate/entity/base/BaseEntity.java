@@ -1,9 +1,6 @@
 package com.example.sellmate.entity.base;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +21,17 @@ public abstract class BaseEntity {
         return id;
     }
 
+    @PrePersist
+    protected void onCreate(){
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+        this.isDeleted = false;
+    }
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
     public void setId(Long id) {
         this.id = id;
     }
