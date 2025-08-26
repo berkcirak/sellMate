@@ -4,16 +4,12 @@ import com.example.sellmate.dto.request.CreateUserRequest;
 import com.example.sellmate.dto.request.UpdateUserRequest;
 import com.example.sellmate.dto.response.UserResponse;
 import com.example.sellmate.entity.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
-    private final PasswordEncoder passwordEncoder;
 
-    public UserMapper(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+
 
     public User toEntity(CreateUserRequest userRequest){
         User user = new User();
@@ -21,7 +17,7 @@ public class UserMapper {
         user.setFirstName(userRequest.firstName());
         user.setLastName(userRequest.lastName());
         user.setProfileImage(userRequest.profileImage());
-        user.setPassword(passwordEncoder.encode(userRequest.password()));
+        user.setPassword(userRequest.password());
         return user;
     }
     public UserResponse toResponse(User user){
@@ -46,7 +42,7 @@ public class UserMapper {
             user.setEmail(request.email());
         }
         if (request.password() != null){
-            user.setPassword(passwordEncoder.encode(request.password()));
+            user.setPassword(request.password());
         }
         if (request.profileImage() != null){
             user.setProfileImage(request.profileImage());
