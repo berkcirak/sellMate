@@ -8,6 +8,7 @@ import com.example.sellmate.exception.user.EmailAlreadyExistsException;
 import com.example.sellmate.exception.user.UserNotFoundException;
 import com.example.sellmate.mapper.UserMapper;
 import com.example.sellmate.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +19,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    public UserService(UserRepository userRepository, UserMapper userMapper){
+    private final BCryptPasswordEncoder passwordEncoder;
+    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder){
         this.userRepository=userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponse saveUser(CreateUserRequest request){
@@ -28,6 +31,7 @@ public class UserService {
             throw new EmailAlreadyExistsException(request.email());
         }
         User user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(request.password()));
         User newUser = userRepository.save(user);
         return userMapper.toResponse(newUser);
     }
@@ -49,6 +53,9 @@ public class UserService {
             }
         }
         userMapper.updateEntityFromRequest(request, user);
+        if (request.password() != null){
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
         User updatedUser = userRepository.save(user);
         return userMapper.toResponse(updatedUser);
     }

@@ -39,7 +39,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@RequestBody UpdateUserRequest request, @PathVariable Long userId, HttpServletRequest httpRequest){
         UserResponse updatedUser = userService.updateUser(request, userId);
-        return ApiResponse.success(updatedUser, "User deleted successfully", httpRequest.getRequestURI());
+        return ApiResponse.success(updatedUser, "User updated successfully", httpRequest.getRequestURI());
     }
     @DeleteMapping("/{userId}")
     public ApiResponse<Void> deleteUser(@PathVariable Long userId, HttpServletRequest httpRequest){
