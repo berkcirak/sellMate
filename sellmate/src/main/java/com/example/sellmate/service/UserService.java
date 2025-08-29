@@ -5,9 +5,14 @@ import com.example.sellmate.dto.request.UpdateUserRequest;
 import com.example.sellmate.dto.response.UserResponse;
 import com.example.sellmate.entity.User;
 import com.example.sellmate.exception.user.EmailAlreadyExistsException;
+import com.example.sellmate.exception.user.EmailNotFoundException;
+import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.exception.user.UserNotFoundException;
 import com.example.sellmate.mapper.UserMapper;
 import com.example.sellmate.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +69,18 @@ public class UserService {
             throw new UserNotFoundException(userId);
         }
         userRepository.deleteById(userId);
+    }
+    public User getCurrentUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()){
+            throw new UnauthorizedException("User not authenticated");
+        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername();
+        return userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException(email));
+    }
+    public Long getCurrentUserId(){
+        return getCurrentUser().getId();
     }
 
 }
