@@ -21,7 +21,7 @@ public class PostController {
     }
 
     @PostMapping
-    public ApiResponse<PostResponse> createPost(@RequestBody CreatePostRequest request, HttpServletRequest httpRequest){
+    public ApiResponse<PostResponse> createPost(@ModelAttribute CreatePostRequest request, HttpServletRequest httpRequest){
         PostResponse post = postService.createPost(request);
         return ApiResponse.success(post, "Post created successfully", httpRequest.getRequestURI());
     }

@@ -20,18 +20,23 @@ public class PostService {
     private final UserService userService;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    public PostService(UserService userService, PostMapper postMapper, PostRepository postRepository){
+    private final FileUploadService fileUploadService;
+
+    public PostService(UserService userService, PostMapper postMapper, PostRepository postRepository, FileUploadService fileUploadService){
         this.userService=userService;
         this.postMapper=postMapper;
         this.postRepository=postRepository;
+        this.fileUploadService = fileUploadService;
     }
 
     public PostResponse createPost(CreatePostRequest request){
         User user = userService.getCurrentUser();
         Post post = postMapper.toEntity(request);
         post.setUser(user);
+        List<String> imageUrls = fileUploadService.uploadImages(request.images());
+        post.setImageUrls(imageUrls);
         Post savedPost = postRepository.save(post);
-        return postMapper.toResponse(savedPost);
+        return postMapper.toResponse(savedPost, imageUrls);
     }
     public PostResponse getPost(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));

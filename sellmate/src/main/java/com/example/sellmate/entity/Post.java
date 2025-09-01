@@ -11,15 +11,21 @@ import java.util.List;
 @Entity
 public class Post extends BaseEntity {
 
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+    @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImage> images = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "post_images", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>();
     public Post(){}
 
     public Post(String title, String description, BigDecimal price, User user) {
@@ -29,12 +35,12 @@ public class Post extends BaseEntity {
         this.user = user;
     }
 
-    public List<ProductImage> getImages() {
-        return images;
+    public List<String> getImageUrls() {
+        return imageUrls;
     }
 
-    public void setImages(List<ProductImage> images) {
-        this.images = images;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 
     public String getTitle() {
