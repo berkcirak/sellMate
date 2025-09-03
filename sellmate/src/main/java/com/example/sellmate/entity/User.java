@@ -1,9 +1,7 @@
 package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -17,6 +15,9 @@ public class User extends BaseEntity {
     private String email;
     private String password;
     private String profileImage;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Wallet wallet;
+    
 
     public User(String firstName, String lastName, String email, String password, String profileImage) {
         this.firstName = firstName;
