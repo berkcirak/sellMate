@@ -1,9 +1,10 @@
 package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -17,6 +18,14 @@ public class User extends BaseEntity {
     private String email;
     private String password;
     private String profileImage;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Wallet wallet;
+    @ManyToMany
+    @JoinTable(name = "user_follows", joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id"))
+    private Set<User> following = new HashSet<>();
+    @ManyToMany(mappedBy = "following")
+    private Set<User> followers = new HashSet<>();
 
     public User(String firstName, String lastName, String email, String password, String profileImage) {
         this.firstName = firstName;
