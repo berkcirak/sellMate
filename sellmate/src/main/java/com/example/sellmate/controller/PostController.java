@@ -30,12 +30,12 @@ public class PostController {
         List<PostResponse> posts = postService.getPosts();
         return ApiResponse.success(posts, "Posts retrieved successfully", httpRequest.getRequestURI());
     }
-    @GetMapping("{postId}")
+    @GetMapping("/{postId}")
     public ApiResponse<PostResponse> getPost(@PathVariable Long postId, HttpServletRequest httpRequest){
         PostResponse post = postService.getPost(postId);
         return ApiResponse.success(post, "Post retrieved successfully",httpRequest.getRequestURI());
     }
-    @GetMapping("{userId}")
+    @GetMapping("/user/{userId}")
     public ApiResponse<List<PostResponse>> getPostsByUser(@PathVariable Long userId, HttpServletRequest httpRequest){
         List<PostResponse> postList = postService.getPostsByUser(userId);
         return ApiResponse.success(postList, "User posts retrieved successfully", httpRequest.getRequestURI());
