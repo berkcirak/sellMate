@@ -3,7 +3,6 @@ package com.example.sellmate.controller;
 import com.example.sellmate.common.ApiResponse;
 import com.example.sellmate.dto.request.CreateLikeRequest;
 import com.example.sellmate.dto.response.LikeResponse;
-import com.example.sellmate.dto.response.PostResponse;
 import com.example.sellmate.service.LikeService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
