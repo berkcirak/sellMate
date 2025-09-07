@@ -53,6 +53,7 @@ public class CommentService {
             throw new UnauthorizedException("You are not authorized for update this comment");
         }
         commentMapper.updateEntityFromRequest(request, comment);
+        Comment updatedComment = commentRepository.save(comment);
         return commentMapper.toResponse(comment);
     }
     public void deleteComment(Long commentId){
