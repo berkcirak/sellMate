@@ -25,10 +25,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
-    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder){
+    private final FileUploadService fileUploadService;
+    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, FileUploadService fileUploadService){
         this.userRepository=userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.fileUploadService = fileUploadService;
     }
 
     public UserResponse saveUser(CreateUserRequest request){
@@ -37,6 +39,10 @@ public class UserService {
         }
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.password()));
+        if (request.profileImage() != null && !request.profileImage().isEmpty()){
+            String imageUrl = fileUploadService.uploadProfileImage(request.profileImage());
+            user.setProfileImage(imageUrl);
+        }
         User newUser = userRepository.save(user);
         return userMapper.toResponse(newUser);
     }
@@ -60,6 +66,13 @@ public class UserService {
         userMapper.updateEntityFromRequest(request, user);
         if (request.password() != null){
             user.setPassword(passwordEncoder.encode(request.password()));
+        }
+        if (request.profileImage() != null && !request.profileImage().isEmpty()){
+            if (user.getProfileImage() != null){
+                fileUploadService.deleteOldProfileImage(user.getProfileImage());
+            }
+            String imageUrl = fileUploadService.uploadProfileImage(request.profileImage());
+            user.setProfileImage(imageUrl);
         }
         User updatedUser = userRepository.save(user);
         return userMapper.toResponse(updatedUser);

@@ -67,6 +67,39 @@ public class FileUploadService {
         }
         return UUID.randomUUID().toString() + extension;
     }
+    public String uploadProfileImage(MultipartFile image){
+        System.out.println("DEBUG: Starting profile image upload...");
+        System.out.println("DEBUG: File: " + (image != null ? image.getOriginalFilename() : "null"));
+
+        if (image == null || image.isEmpty()){
+            System.out.println("DEBUG: No profile image to upload");
+            return null;
+        }
+        String fileName = generateFileName(image.getOriginalFilename());
+        String filePath = uploadDir + fileName;
+        try {
+            Path path = Paths.get(filePath);
+            Files.copy(image.getInputStream(), path);
+            String imageUrl = "/uploads/posts/" + fileName;
+            return imageUrl;
+        } catch (IOException e){
+            System.err.println("ERROR saving profile image: "+ e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Could not save profile image: " + fileName, e);
+        }
+    }
+    public void deleteOldProfileImage(String imageUrl) {
+        try {
+            if (imageUrl != null && imageUrl.startsWith("/uploads/posts/")) {
+                String fileName = imageUrl.substring("/uploads/posts/".length());
+                java.nio.file.Path filePath = java.nio.file.Paths.get("uploads/posts/" + fileName);
+                java.nio.file.Files.deleteIfExists(filePath);
+                System.out.println("DEBUG: Deleted old profile image: " + fileName);
+            }
+        } catch (java.io.IOException e) {
+            System.err.println("ERROR deleting old profile image: " + e.getMessage());
+        }
+    }
 
 
 }

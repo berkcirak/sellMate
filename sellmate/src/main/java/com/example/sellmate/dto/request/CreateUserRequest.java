@@ -3,6 +3,8 @@ package com.example.sellmate.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
+
 
 public record CreateUserRequest(
         @NotBlank(message = "First name is required")
@@ -17,6 +19,6 @@ public record CreateUserRequest(
         @NotBlank(message = "Password is required")
         @Size(min = 4, message = "Password must be at least 4 characters")
         String password,
-        String profileImage
+        MultipartFile profileImage
 ) {
 }

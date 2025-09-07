@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ApiResponse<UserResponse> saveUser(@RequestBody CreateUserRequest request, HttpServletRequest httpRequest){
+    public ApiResponse<UserResponse> saveUser(@ModelAttribute CreateUserRequest request, HttpServletRequest httpRequest){
         UserResponse userResponse = userService.saveUser(request);
         return ApiResponse.success(userResponse, "User created successfully", httpRequest.getRequestURI());
     }
@@ -37,7 +37,7 @@ public class UserController {
         return ApiResponse.success(user, "User retrieved successfully", httpRequest.getRequestURI());
     }
     @PutMapping("/{userId}")
-    public ApiResponse<UserResponse> updateUser(@RequestBody UpdateUserRequest request, @PathVariable Long userId, HttpServletRequest httpRequest){
+    public ApiResponse<UserResponse> updateUser(@ModelAttribute UpdateUserRequest request, @PathVariable Long userId, HttpServletRequest httpRequest){
         UserResponse updatedUser = userService.updateUser(request, userId);
         return ApiResponse.success(updatedUser, "User updated successfully", httpRequest.getRequestURI());
     }

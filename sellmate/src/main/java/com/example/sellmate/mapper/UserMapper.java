@@ -16,7 +16,6 @@ public class UserMapper {
         user.setEmail(userRequest.email());
         user.setFirstName(userRequest.firstName());
         user.setLastName(userRequest.lastName());
-        user.setProfileImage(userRequest.profileImage());
         user.setPassword(userRequest.password());
         return user;
     }
@@ -43,9 +42,6 @@ public class UserMapper {
         }
         if (request.password() != null){
             user.setPassword(request.password());
-        }
-        if (request.profileImage() != null){
-            user.setProfileImage(request.profileImage());
         }
     }
 
