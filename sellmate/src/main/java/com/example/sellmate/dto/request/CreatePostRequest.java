@@ -1,5 +1,6 @@
 package com.example.sellmate.dto.request;
 
+import com.example.sellmate.entity.Category;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ public record CreatePostRequest(
         @NotNull(message = "Prince is required")
         @DecimalMin(value= "0.01", message = "Price must be greater than 0")
         BigDecimal price,
+        @NotNull Category category,
         List<MultipartFile> images
 ) {
 }

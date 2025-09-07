@@ -8,7 +8,6 @@ import com.example.sellmate.entity.Post;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class PostMapper {
@@ -23,6 +22,7 @@ public class PostMapper {
         post.setTitle(request.title());
         post.setAvailable(true);
         post.setDescription(request.description());
+        post.setCategory(request.category());
         post.setPrice(request.price());
         return post;
     }
@@ -32,6 +32,7 @@ public class PostMapper {
         return new PostResponse(post.getId(),
                 post.getTitle(),
                 post.getDescription(),
+                post.getCategory(),
                 post.getPrice(),
                 post.getAvailable(),
                 post.getCreatedAt(),
