@@ -68,7 +68,10 @@ public class PostService {
         }
         postRepository.delete(post);
     }
-
+    public Post getPostEntity(Long postId){
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        return post;
+    }
 
 
 }
