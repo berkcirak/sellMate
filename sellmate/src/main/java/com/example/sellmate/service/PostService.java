@@ -9,6 +9,7 @@ import com.example.sellmate.exception.post.PostNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.mapper.PostMapper;
 import com.example.sellmate.repository.PostRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,6 +72,13 @@ public class PostService {
     public Post getPostEntity(Long postId){
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return post;
+    }
+    public List<PostResponse> getFeed(int page, int size){
+        List<Long> followingIds = userService.getFollowingIdsOfCurrentUser();
+        if (followingIds.isEmpty()) return List.of();
+        PageRequest pageRequest = PageRequest.of(page, size);
+        var pagePosts = postRepository.findByUserIdInOrderByCreatedAtDesc(followingIds, pageRequest);
+        return pagePosts.getContent().stream().map(postMapper::toResponse).toList();
     }
 
 
