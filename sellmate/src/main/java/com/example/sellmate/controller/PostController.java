@@ -50,5 +50,11 @@ public class PostController {
         postService.deletePost(postId);
         return ApiResponse.success(null, "Post deleted successfully", httpRequest.getRequestURI());
     }
+    @GetMapping("/feed")
+    public ApiResponse<List<PostResponse>> feed(@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "20") int size,
+                                                HttpServletRequest httpRequest){
+        return ApiResponse.success(postService.getFeed(page, size), "Feed", httpRequest.getRequestURI());
+    }
 
 }
