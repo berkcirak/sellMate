@@ -3,12 +3,14 @@ package com.example.sellmate.service;
 import com.example.sellmate.dto.request.CreateUserRequest;
 import com.example.sellmate.dto.request.UpdateUserRequest;
 import com.example.sellmate.dto.response.UserResponse;
+import com.example.sellmate.entity.Follow;
 import com.example.sellmate.entity.User;
 import com.example.sellmate.exception.user.EmailAlreadyExistsException;
 import com.example.sellmate.exception.user.EmailNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.exception.user.UserNotFoundException;
 import com.example.sellmate.mapper.UserMapper;
+import com.example.sellmate.repository.FollowRepository;
 import com.example.sellmate.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,11 +28,13 @@ public class UserService {
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
     private final FileUploadService fileUploadService;
-    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, FileUploadService fileUploadService){
+    private final FollowRepository followRepository;
+    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, FileUploadService fileUploadService, FollowRepository followRepository){
         this.userRepository=userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileUploadService = fileUploadService;
+        this.followRepository = followRepository;
     }
 
     public UserResponse saveUser(CreateUserRequest request){
@@ -94,6 +98,31 @@ public class UserService {
     }
     public Long getCurrentUserId(){
         return getCurrentUser().getId();
+    }
+
+    public void followUser(Long targetUserId){
+        User currentUser = getCurrentUser();
+        if (currentUser.getId().equals(targetUserId)){
+            throw new UnauthorizedException("You cannot follow yourself");
+        }
+        if (followRepository.existsByFollowerIdAndFollowingId(currentUser.getId(), targetUserId)) return;
+        User target = userRepository.findById(targetUserId).orElseThrow(() -> new UserNotFoundException(targetUserId));
+        Follow follow = new Follow();
+        follow.setFollower(getCurrentUser());
+        follow.setFollowing(target);
+        followRepository.save(follow);
+    }
+    public void unfollowUser(Long targetUserId){
+        User currentUser = getCurrentUser();
+        followRepository.findByFollowerIdAndFollowingId(currentUser.getId(), targetUserId).ifPresent(followRepository::delete);
+    }
+    public List<Long> getFollowingIdsOfCurrentUser(){
+        User currentUser = getCurrentUser();
+        return followRepository.findAllByFollowerId(currentUser.getId()).stream().map(f -> f.getFollowing().getId()).toList();
+    }
+    public List<Long> getFollowerIdsOfCurrentUser(){
+        User currentUser = getCurrentUser();
+        return followRepository.findAllByFollowingId(currentUser.getId()).stream().map(f -> f.getFollower().getId()).toList();
     }
 
 }
