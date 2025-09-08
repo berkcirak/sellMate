@@ -20,12 +20,6 @@ public class User extends BaseEntity {
     private String profileImage;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Wallet wallet;
-    @ManyToMany
-    @JoinTable(name = "user_follows", joinColumns = @JoinColumn(name = "follower_id"),
-            inverseJoinColumns = @JoinColumn(name = "following_id"))
-    private Set<User> following = new HashSet<>();
-    @ManyToMany(mappedBy = "following")
-    private Set<User> followers = new HashSet<>();
 
     public User(String firstName, String lastName, String email, String password, String profileImage) {
         this.firstName = firstName;
