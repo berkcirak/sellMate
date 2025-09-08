@@ -47,6 +47,18 @@ public class UserController {
         return ApiResponse.success(null, "User deleted successfully", httpRequest.getRequestURI());
     }
 
+    @PostMapping("/{userId}/follow")
+    public ApiResponse<Void> follow(@PathVariable Long userId, HttpServletRequest httpRequest){
+        userService.followUser(userId);
+        return ApiResponse.success(null, "User followed", httpRequest.getRequestURI());
+    }
+    @DeleteMapping("/{userId}/unfollow")
+    public ApiResponse<Void> unfollow(@PathVariable Long userId, HttpServletRequest httpRequest){
+        userService.unfollowUser(userId);
+        return ApiResponse.success(null, "User unfollowed", httpRequest.getRequestURI());
+    }
+
+
 
 
 
