@@ -5,6 +5,7 @@ import com.example.sellmate.dto.request.UpdateUserRequest;
 import com.example.sellmate.dto.response.UserResponse;
 import com.example.sellmate.entity.Follow;
 import com.example.sellmate.entity.User;
+import com.example.sellmate.entity.Wallet;
 import com.example.sellmate.exception.user.EmailAlreadyExistsException;
 import com.example.sellmate.exception.user.EmailNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
@@ -47,6 +48,9 @@ public class UserService {
             String imageUrl = fileUploadService.uploadProfileImage(request.profileImage());
             user.setProfileImage(imageUrl);
         }
+        Wallet wallet = new Wallet();
+        wallet.setUser(user);
+        user.setWallet(wallet);
         User newUser = userRepository.save(user);
         return userMapper.toResponse(newUser);
     }
