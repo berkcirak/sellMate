@@ -72,4 +72,12 @@ public class User extends BaseEntity {
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
 }
