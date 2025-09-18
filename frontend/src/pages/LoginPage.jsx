@@ -1,6 +1,6 @@
 import React from 'react';
 import LoginForm from '../components/forms/LoginForm';
-
+import '../styles/pages/login.css';
 const LoginPage = () => {
   return (
     <div className="login-page">

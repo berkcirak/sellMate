@@ -1,0 +1,66 @@
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: var(--radius-xl);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  transform: translateY(0);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-xl);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #5b21b6 100%);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

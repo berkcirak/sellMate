@@ -5,4 +5,13 @@ export const authApi = {
     const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
+
+  register: async (formData) => {
+    const response = await apiClient.post('/auth/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
