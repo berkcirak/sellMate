@@ -77,7 +77,7 @@ const RegisterForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="login-form">
         {/* Profile Image Upload */}
         <div className="input-group">
-          <label className="input-label">Profil Fotoğrafı (Opsiyonel)</label>
+          <label className="input-label">Profil Fotoğrafı</label>
           <div className="image-upload-container">
             <div className="image-preview">
               {imagePreview ? (
