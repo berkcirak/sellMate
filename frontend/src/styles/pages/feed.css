@@ -33,31 +33,9 @@
 .feed-container {
   position: relative;
   z-index: 10;
-  max-width: 36rem;
+  max-width: 50rem;
   margin: 0 auto;
   padding: 1rem;
-}
-
-.feed-header {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--gray-200);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-
-.feed-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  margin-bottom: 0.25rem;
-}
-
-.feed-subtitle {
-  color: var(--gray-600);
-  font-size: 0.875rem;
 }
 
 .feed-content {

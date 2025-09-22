@@ -49,10 +49,7 @@ export default function FeedPage() {
   return (
     <div className="feed-page">
       <div className="feed-container">
-        <header className="feed-header">
-          <h1 className="feed-title">Akış</h1>
-          <p className="feed-subtitle">Takip ettiklerinin paylaşımları</p>
-        </header>
+       
 
         <main className="feed-content">
           {/* Quick Post Box */}
