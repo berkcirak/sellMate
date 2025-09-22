@@ -31,12 +31,36 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Image URL'lerini tam URL'ye çevir
+    if (res.data?.data) {
+      const processPostImages = (post) => {
+        if (post.imageUrls && Array.isArray(post.imageUrls)) {
+          post.imageUrls = post.imageUrls.map(url => {
+            if (url.startsWith('/uploads/')) {
+              return `${API_BASE_URL}${url}`;
+            }
+            return url;
+          });
+        }
+        if (post.user?.profileImage && post.user.profileImage.startsWith('/uploads/')) {
+          post.user.profileImage = `${API_BASE_URL}${post.user.profileImage}`;
+        }
+        return post;
+      };
+
+      if (Array.isArray(res.data.data)) {
+        res.data.data = res.data.data.map(processPostImages);
+      } else {
+        res.data.data = processPostImages(res.data.data);
+      }
+    }
+    return res;
+  },
   (err) => {
     const status = err?.response?.status;
     if (status === 401 || status === 403) {
       localStorage.removeItem(TOKEN_KEY);
-      // auth sayfasında değilsek login'e yönlendir
       if (!location.pathname.startsWith('/login')) {
         window.location.href = '/login';
       }
@@ -44,5 +68,6 @@ apiClient.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
 
 export default apiClient;
