@@ -59,5 +59,10 @@ public class LikeService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return likeRepository.countByPost(post);
     }
+    public List<LikeResponse> getUserLikesById(Long userId){
+        List<Like> likes = likeRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        return likes.stream().map(likeMapper::toResponse).toList();
+    }
+
 
 }

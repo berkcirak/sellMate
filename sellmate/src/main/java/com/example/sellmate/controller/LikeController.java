@@ -44,6 +44,11 @@ public class LikeController {
         long count = likeService.getPostLikeCount(postId);
         return ApiResponse.success(count, "Post like count retrieved successfully", httpRequest.getRequestURI());
     }
+    @GetMapping("/{userId}")
+    public ApiResponse<List<LikeResponse>> getUserLikesById(@PathVariable Long userId, HttpServletRequest httpServletRequest){
+        List<LikeResponse> likeResponses = likeService.getUserLikesById(userId);
+        return ApiResponse.success(likeResponses, "User likes retrieved successfully", httpServletRequest.getRequestURI());
+    }
     
 
 
