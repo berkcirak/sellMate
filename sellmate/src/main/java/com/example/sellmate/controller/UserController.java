@@ -75,6 +75,10 @@ public class UserController {
         List<UserResponse> users = userService.getFollowing(userId);
         return ApiResponse.success(users, "Follow list retrieved successfully", httpServletRequest.getRequestURI());
     }
-
+    @GetMapping("/search")
+    public ApiResponse<List<UserResponse>> searchUsers(@RequestParam("q") String q, HttpServletRequest httpServletRequest){
+        List<UserResponse> userResponses = userService.searchUsers(q);
+        return ApiResponse.success(userResponses, "Users retrieved successfully", httpServletRequest.getRequestURI());
+    }
 
 }

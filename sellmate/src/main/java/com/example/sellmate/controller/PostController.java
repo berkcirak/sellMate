@@ -56,5 +56,9 @@ public class PostController {
                                                 HttpServletRequest httpRequest){
         return ApiResponse.success(postService.getFeed(page, size), "Feed", httpRequest.getRequestURI());
     }
-
+    @GetMapping("/search")
+    public ApiResponse<List<PostResponse>> searchPosts(@RequestParam("q") String q, HttpServletRequest httpServletRequest){
+        List<PostResponse> postResponses = postService.searchPosts(q);
+        return ApiResponse.success(postResponses, "Posts retrieved successfully", httpServletRequest.getRequestURI());
+    }
 }

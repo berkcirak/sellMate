@@ -154,7 +154,7 @@ public class UserService {
     public List<UserResponse> searchUsers(String q){
         String s = q == null ? "" : q.trim();
         if (s.isEmpty()) return List.of();
-        List<User> users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailIgnoreCase(s, s, s);
+        List<User> users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(s, s, s);
         return users.stream().map(userMapper::toResponse).toList();
     }
 
