@@ -9,3 +9,7 @@ export const getCommentsByPost = async (postId) => {
   const res = await apiClient.get(`/comment/post/${postId}`);
   return res.data?.data ?? [];
 };
+export const getCommentsByUser = async (userId) => {
+ const res = await apiClient.get(`/comment/user/${userId}`);
+ return res.data?.data ?? [];
+}

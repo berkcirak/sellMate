@@ -20,8 +20,12 @@ export const getPostLikes = async (postId) => {
   return res.data?.data ?? [];
 };
 
-
 export const getMyLikes = async () => {
- const res = await apiClient.get('/likes/my-likes');
- return res.data?.data ?? [];
-}
+  const res = await apiClient.get('/likes/my-likes');
+  return res.data?.data ?? [];
+};
+
+export const getUserLikes = async (userId) => {
+  const res = await apiClient.get(`/${userId}`);
+  return res.data?.data ?? [];
+};

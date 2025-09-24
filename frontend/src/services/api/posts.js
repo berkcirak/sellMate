@@ -15,3 +15,8 @@ export const createPost = async (formData) => {
 };
 export const searchPosts = async (q) =>
   apiClient.get(`/posts/search`, { params: { q } }).then(r => r.data?.data);
+
+export const getPostsByUser = async (userId) => {
+  const res = await apiClient.get(`/posts/user/${userId}`);
+  return res.data?.data ?? [];
+}
