@@ -8,6 +8,8 @@ public record UserResponse(
         String lastName,
         String email,
         String profileImage,
+        int followersCount,
+        int followingCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

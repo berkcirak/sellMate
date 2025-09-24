@@ -26,6 +26,8 @@ public class CommentMapper {
                 comment.getUser().getLastName(),
                 comment.getUser().getEmail(),
                 comment.getUser().getProfileImage(),
+                0,
+                0,
                 comment.getUser().getCreatedAt(),
                 comment.getUser().getUpdatedAt()
         );

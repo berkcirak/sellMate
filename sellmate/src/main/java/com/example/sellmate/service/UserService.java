@@ -120,13 +120,37 @@ public class UserService {
         User currentUser = getCurrentUser();
         followRepository.findByFollowerIdAndFollowingId(currentUser.getId(), targetUserId).ifPresent(followRepository::delete);
     }
+
+    public UserResponse getCurrentUserProfile(){
+        User user = getCurrentUser();
+        int followers = followRepository.countByFollowingId(user.getId());
+        int following = followRepository.countByFollowerId(user.getId());
+        UserResponse userResponse = userMapper.toResponse(user);
+        return new UserResponse(
+                userResponse.id(),
+                userResponse.firstName(),
+                userResponse.lastName(),
+                userResponse.email(),
+                userResponse.profileImage(),
+                followers,
+                following,
+                userResponse.createdAt(),
+                userResponse.updatedAt()
+        );
+    }
     public List<Long> getFollowingIdsOfCurrentUser(){
         User currentUser = getCurrentUser();
         return followRepository.findAllByFollowerId(currentUser.getId()).stream().map(f -> f.getFollowing().getId()).toList();
     }
-    public List<Long> getFollowerIdsOfCurrentUser(){
-        User currentUser = getCurrentUser();
-        return followRepository.findAllByFollowingId(currentUser.getId()).stream().map(f -> f.getFollower().getId()).toList();
+
+    public List<UserResponse> getFollowers(Long userId){
+        List<User> followers = followRepository.findAllByFollowingId(userId).stream().map(Follow::getFollower).toList();
+        return followers.stream().map(userMapper::toResponse).collect(Collectors.toList());
     }
+    public List<UserResponse> getFollowing(Long userId){
+        List<User> following = followRepository.findAllByFollowingId(userId).stream().map(Follow::getFollowing).toList();
+        return following.stream().map(userMapper::toResponse).collect(Collectors.toList());
+    }
+
 
 }

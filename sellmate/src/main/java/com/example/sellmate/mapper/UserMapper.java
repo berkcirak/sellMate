@@ -26,6 +26,8 @@ public class UserMapper {
                 user.getLastName(),
                 user.getEmail(),
                 user.getProfileImage(),
+                0,
+                0,
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
