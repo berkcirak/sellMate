@@ -13,3 +13,5 @@ export const createPost = async (formData) => {
  });
  return res.data?.data;
 };
+export const searchPosts = async (q) =>
+  apiClient.get(`/posts/search`, { params: { q } }).then(r => r.data?.data);

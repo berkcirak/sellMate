@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function PostCard({ post }) {
  const user = post.user || {};
  const images = post.imageUrls || [];
  const createdAt = new Date(post.createdAt);
-
+ const navigate = useNavigate();
  // Image URL'lerini tam URL'ye çevir
  const getFullImageUrl = (url) => {
    if (!url) return '';
@@ -44,8 +46,9 @@ export default function PostCard({ post }) {
 
  return (
    <article className="post-card">
-     <header className="post-header">
-       <div className="post-avatar">
+         <header className="post-header" style={{ cursor: user.id ? 'pointer' : 'default' }}
+      onClick={() => user.id && navigate(`/profile/${user.id}`)}>
+      <div className="post-avatar">
          {user.profileImage ? (
            <img src={getFullImageUrl(user.profileImage)} alt="" />
          ) : (

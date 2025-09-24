@@ -1,0 +1,72 @@
+/* Top navbar */
+.top-navbar {
+  position: sticky; /* scroll’da üstte kalsın */
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* Orta – arama */
+.navbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.searchbar {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0 8px 0 12px;
+  height: 38px;
+}
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+}
+.search-input::placeholder {
+  color: #9ca3af;
+}
+.search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 36px;
+  border: 0;
+  border-radius: 9999px;
+  background: #111827;
+  color: #ffffff;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+.search-btn:hover {
+  opacity: .9;
+}
+
+/* Sağ – aksiyonlar (ileride bildirim/hesap) */
+.navbar-right {
+  min-width: 140px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Layout ana içerikte üst boşluk (eğer navbar sabit olsaydı kullanılırdı) */
+/* .layout-main { padding-top: 56px; } */

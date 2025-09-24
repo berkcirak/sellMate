@@ -32,6 +32,19 @@ public class UserMapper {
                 user.getUpdatedAt()
         );
     }
+    public UserResponse toResponse(User user, int followerCount, int followingCount){
+        return new UserResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getProfileImage(),
+                followerCount,
+                followingCount,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
+    }
     public void updateEntityFromRequest(UpdateUserRequest request, User user){
         if (request.firstName() != null){
             user.setFirstName(request.firstName());

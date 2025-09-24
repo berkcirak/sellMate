@@ -23,3 +23,4 @@
 .layout-main > * {
   min-height: 100vh;
 }
+.layout-main > .top-navbar { min-height: auto; }

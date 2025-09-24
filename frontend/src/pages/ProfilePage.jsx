@@ -1,25 +1,35 @@
 import { useEffect, useState } from 'react';
-import { getMyProfile } from '../services/api/user';
+import { getMyProfile, getUserById } from '../services/api/user';
+import { useParams } from 'react-router-dom';
 import FollowModal from '../components/profile/FollowModal';
 import '../styles/pages/profile.css';
 
 export default function ProfilePage() {
+  const { userId } = useParams();
   const [me, setMe] = useState(null);
   const [err, setErr] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('followers');
 
+  const getFullImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `http://localhost:8080${url}`;
+    }
+    return url;
+  };
+
   useEffect(() => {
     (async () => {
       try {
-        const data = await getMyProfile();
+        const data = userId ? await getUserById(userId) : await getMyProfile();
         setMe(data);
       } catch (e) {
         console.error('Profile fetch error:', e);
         setErr('Profil bilgileri alınamadı.');
       }
     })();
-  }, []);
+  }, [userId]);
 
   if (err) return <div className="profile-page"><div className="profile-error">{err}</div></div>;
   if (!me) return <div className="profile-page"><div className="profile-loading">Yükleniyor…</div></div>;
@@ -38,7 +48,7 @@ export default function ProfilePage() {
         <div className="profile-header">
           <div className="profile-avatar">
             {me.profileImage ? (
-              <img src={me.profileImage} alt="" />
+              <img src={getFullImageUrl(me.profileImage)} alt="" />
             ) : (
               <div className="profile-initials">
                 {(me.firstName?.[0] || '').toUpperCase()}{(me.lastName?.[0] || '').toUpperCase()}

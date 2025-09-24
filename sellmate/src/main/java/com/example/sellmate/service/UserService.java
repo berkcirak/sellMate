@@ -62,7 +62,9 @@ public class UserService {
     }
     public UserResponse getUser(Long userId){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-        return userMapper.toResponse(user);
+        int followers = followRepository.countByFollowingId(user.getId());
+        int following = followRepository.countByFollowerId(user.getId());
+        return userMapper.toResponse(user, followers, following);
     }
     public UserResponse updateUser(UpdateUserRequest request, Long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException(userId));
@@ -125,18 +127,7 @@ public class UserService {
         User user = getCurrentUser();
         int followers = followRepository.countByFollowingId(user.getId());
         int following = followRepository.countByFollowerId(user.getId());
-        UserResponse userResponse = userMapper.toResponse(user);
-        return new UserResponse(
-                userResponse.id(),
-                userResponse.firstName(),
-                userResponse.lastName(),
-                userResponse.email(),
-                userResponse.profileImage(),
-                followers,
-                following,
-                userResponse.createdAt(),
-                userResponse.updatedAt()
-        );
+        return userMapper.toResponse(user, followers, following);
     }
     public List<Long> getFollowingIdsOfCurrentUser(){
         User currentUser = getCurrentUser();

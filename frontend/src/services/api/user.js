@@ -24,3 +24,6 @@ export const getFollowers = async (userId) =>
 
 export const getFollowing = async (userId) =>
   apiClient.get(`/user/${userId}/following`).then(r => r.data.data);
+
+export const searchUsers = async (q) =>
+  apiClient.get(`/user/search`, { params: { q } }).then(r => r.data?.data);
