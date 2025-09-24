@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getMyProfile, getUserById } from '../services/api/user';
+import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing } from '../services/api/user';
 import { getPostsByUser } from '../services/api/posts';
 import { getUserLikes } from '../services/api/like';
 import { getCommentsByUser } from '../services/api/comment';
@@ -22,6 +22,10 @@ export default function ProfilePage() {
   const [likes, setLikes] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Follow states
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const getFullImageUrl = (url) => {
     if (!url) return '';
@@ -84,11 +88,54 @@ export default function ProfilePage() {
     }
   }, [me?.id, loadTabData]);
 
+  // Check if current user is following the viewed user
+  useEffect(() => {
+    if (auth?.id && me?.id && auth.id !== me.id) {
+      const checkFollowStatus = async () => {
+        try {
+          // Giriş yapan kullanıcının takip ettiklerini getir
+          const followingList = await getFollowing(auth.id);
+          // Bu kullanıcıyı takip edip etmediğini kontrol et
+          const isFollowingUser = followingList.some(user => user.id === me.id);
+          setIsFollowing(isFollowingUser);
+        } catch (e) {
+          console.error('Error checking follow status:', e);
+          setIsFollowing(false);
+        }
+      };
+      checkFollowStatus();
+    }
+  }, [auth?.id, me?.id]);
+
+  const handleFollowToggle = async () => {
+    if (!me?.id || !auth?.id || followLoading) return;
+    
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await unfollowUser(me.id);
+        setIsFollowing(false);
+        // Takipçi sayısını güncelle
+        setMe(prev => ({ ...prev, followersCount: Math.max(0, (prev.followersCount || 0) - 1) }));
+      } else {
+        await followUser(me.id);
+        setIsFollowing(true);
+        // Takipçi sayısını güncelle
+        setMe(prev => ({ ...prev, followersCount: (prev.followersCount || 0) + 1 }));
+      }
+    } catch (e) {
+      console.error('Error toggling follow:', e);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   if (err) return <div className="profile-page"><div className="profile-error">{err}</div></div>;
   if (!me) return <div className="profile-page"><div className="profile-loading">Yükleniyor…</div></div>;
 
   const created = me.createdAt ? new Date(me.createdAt).toLocaleString('tr-TR') : '-';
   const updated = me.updatedAt ? new Date(me.updatedAt).toLocaleString('tr-TR') : '-';
+  const isOwnProfile = !userId || auth?.id === me.id;
 
   const openModal = (type) => {
     setModalType(type);
@@ -168,20 +215,43 @@ export default function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-card">
-        <div className="profile-header">
-          <div className="profile-avatar">
-            {me.profileImage ? (
-              <img src={getFullImageUrl(me.profileImage)} alt="" />
-            ) : (
-              <div className="profile-initials">
-                {(me.firstName?.[0] || '').toUpperCase()}{(me.lastName?.[0] || '').toUpperCase()}
-              </div>
-            )}
+        <div className="profile-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="profile-avatar">
+              {me.profileImage ? (
+                <img src={getFullImageUrl(me.profileImage)} alt="" />
+              ) : (
+                <div className="profile-initials">
+                  {(me.firstName?.[0] || '').toUpperCase()}{(me.lastName?.[0] || '').toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="profile-title">
+              <h1 className="profile-name">{me.firstName} {me.lastName}</h1>
+              <div className="profile-email">{me.email}</div>
+            </div>
           </div>
-          <div className="profile-title">
-            <h1 className="profile-name">{me.firstName} {me.lastName}</h1>
-            <div className="profile-email">{me.email}</div>
-          </div>
+          
+          {/* Follow Button - Sağ tarafta */}
+          {!isOwnProfile && (
+            <button
+              onClick={handleFollowToggle}
+              disabled={followLoading}
+              style={{
+                padding: '8px 24px',
+                borderRadius: '6px',
+                border: '1px solid #ddd',
+                background: isFollowing ? '#f8f9fa' : '#007bff',
+                color: isFollowing ? '#333' : 'white',
+                cursor: followLoading ? 'not-allowed' : 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                opacity: followLoading ? 0.7 : 1
+              }}
+            >
+              {followLoading ? 'Yükleniyor...' : (isFollowing ? 'Takip Ediliyor' : 'Takip Et')}
+            </button>
+          )}
         </div>
 
         {/* Follow Stats */}
