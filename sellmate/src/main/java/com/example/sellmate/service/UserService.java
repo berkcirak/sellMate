@@ -139,7 +139,7 @@ public class UserService {
         return followers.stream().map(userMapper::toResponse).collect(Collectors.toList());
     }
     public List<UserResponse> getFollowing(Long userId){
-        List<User> following = followRepository.findAllByFollowingId(userId).stream().map(Follow::getFollowing).toList();
+        List<User> following = followRepository.findAllByFollowerId(userId).stream().map(Follow::getFollowing).toList();
         return following.stream().map(userMapper::toResponse).collect(Collectors.toList());
     }
     public List<UserResponse> searchUsers(String q){

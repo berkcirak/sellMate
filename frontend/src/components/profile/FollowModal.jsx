@@ -26,7 +26,9 @@ export default function FollowModal({
       const data = type === 'followers' 
         ? await getFollowers(userId)
         : await getFollowing(userId);
-      setUsers(data || []);
+      // Sadece kendi profilini görüntülerken kendini gizle
+      const list = (data || []).filter(u => !(userId === currentUserId && u.id === currentUserId));
+      setUsers(list);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -107,7 +109,7 @@ export default function FollowModal({
                         className={`follow-btn ${isFollowing ? 'following' : 'not-following'}`}
                         onClick={() => isFollowing ? handleUnfollow(user.id) : handleFollow(user.id)}
                       >
-                        {isFollowing ? 'Takip Et' : 'Takip Et'}
+                        {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
                       </button>
                     )}
                   </div>

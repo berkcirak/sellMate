@@ -7,6 +7,7 @@ import '../styles/pages/profile.css';
 export default function ProfilePage() {
   const { userId } = useParams();
   const [me, setMe] = useState(null);
+  const [auth, setAuth] = useState(null);
   const [err, setErr] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('followers');
@@ -22,8 +23,12 @@ export default function ProfilePage() {
   useEffect(() => {
     (async () => {
       try {
+        // Görüntülenen profil
         const data = userId ? await getUserById(userId) : await getMyProfile();
         setMe(data);
+        // Giriş yapan kullanıcı
+        const mine = await getMyProfile();
+        setAuth(mine);
       } catch (e) {
         console.error('Profile fetch error:', e);
         setErr('Profil bilgileri alınamadı.');
@@ -63,13 +68,13 @@ export default function ProfilePage() {
 
         {/* Follow Stats */}
         <div className="profile-stats">
-          <button className="stat-item" onClick={() => openModal('following')}>
-            <span className="stat-number">{me.followingCount || 0}</span>
-            <span className="stat-label">Takip Edilenler</span>
-          </button>
           <button className="stat-item" onClick={() => openModal('followers')}>
             <span className="stat-number">{me.followersCount || 0}</span>
             <span className="stat-label">Takipçiler</span>
+          </button>
+          <button className="stat-item" onClick={() => openModal('following')}>
+            <span className="stat-number">{me.followingCount || 0}</span>
+            <span className="stat-label">Takip Edilenler</span>
           </button>
         </div>
 
@@ -90,7 +95,7 @@ export default function ProfilePage() {
         onClose={() => setShowModal(false)}
         userId={me.id}
         type={modalType}
-        currentUserId={me.id}
+        currentUserId={auth?.id}
       />
     </div>
   );
