@@ -4,6 +4,8 @@ import com.example.sellmate.common.ApiResponse;
 import com.example.sellmate.dto.request.CreateUserRequest;
 import com.example.sellmate.dto.request.UpdateUserRequest;
 import com.example.sellmate.dto.response.UserResponse;
+import com.example.sellmate.entity.User;
+import com.example.sellmate.mapper.UserMapper;
 import com.example.sellmate.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping
@@ -57,9 +60,21 @@ public class UserController {
         userService.unfollowUser(userId);
         return ApiResponse.success(null, "User unfollowed", httpRequest.getRequestURI());
     }
-
-
-
+    @GetMapping("/profile")
+    public ApiResponse<UserResponse> getUserProfile(HttpServletRequest httpRequest){
+        UserResponse user = userService.getCurrentUserProfile();
+        return ApiResponse.success(user, "User profile retrieved successfully", httpRequest.getRequestURI());
+    }
+    @GetMapping("/{userId}/followers")
+    public ApiResponse<List<UserResponse>> followers(@PathVariable Long userId, HttpServletRequest httpServletRequest){
+        List<UserResponse> users = userService.getFollowers(userId);
+        return ApiResponse.success(users, "Followers retrieved successfully", httpServletRequest.getRequestURI());
+    }
+    @GetMapping("/{userId}/following")
+    public ApiResponse<List<UserResponse>> following(@PathVariable Long userId, HttpServletRequest httpServletRequest){
+        List<UserResponse> users = userService.getFollowing(userId);
+        return ApiResponse.success(users, "Follow list retrieved successfully", httpServletRequest.getRequestURI());
+    }
 
 
 }
