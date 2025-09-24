@@ -151,6 +151,11 @@ public class UserService {
         List<User> following = followRepository.findAllByFollowingId(userId).stream().map(Follow::getFollowing).toList();
         return following.stream().map(userMapper::toResponse).collect(Collectors.toList());
     }
-
+    public List<UserResponse> searchUsers(String q){
+        String s = q == null ? "" : q.trim();
+        if (s.isEmpty()) return List.of();
+        List<User> users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailIgnoreCase(s, s, s);
+        return users.stream().map(userMapper::toResponse).toList();
+    }
 
 }

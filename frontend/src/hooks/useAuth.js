@@ -20,7 +20,7 @@ export const useAuth = () => {
         console.log('Token received:', token);
         
         localStorage.setItem('token', token);
-        window.location.href = '/dashboard';
+        window.location.href = '/feed';
         
         return response;
       } else {

@@ -80,6 +80,11 @@ public class PostService {
         var pagePosts = postRepository.findByUserIdInOrderByCreatedAtDesc(followingIds, pageRequest);
         return pagePosts.getContent().stream().map(postMapper::toResponse).toList();
     }
-
+    public List<PostResponse> searchPosts(String q){
+        String s = q == null ? "" : q.trim();
+        if (s.isEmpty()) return List.of();
+        List<Post> posts = postRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(s, s);
+        return posts.stream().map(postMapper::toResponse).toList();
+    }
 
 }
