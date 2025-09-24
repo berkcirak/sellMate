@@ -9,6 +9,20 @@ const CATEGORIES = [
   { value: 'SPORTS', label: 'Spor' },
   { value: 'BOOKS', label: 'Kitap' },
   { value: 'VEHICLES', label: 'Araç' },
+  { value: 'FURNITURE', label: 'Mobilya' },
+  { value: 'APPLIANCES', label: 'Beyaz Eşya' },
+  { value: 'BEAUTY', label: 'Kozmetik & Kişisel Bakım' },
+  { value: 'TOYS', label: 'Oyuncak' },
+  { value: 'PET_SUPPLIES', label: 'Evcil Hayvan' },
+  { value: 'GROCERIES', label: 'Market' },
+  { value: 'HOBBIES', label: 'Hobi' },
+  { value: 'ART', label: 'Sanat' },
+  { value: 'MUSIC', label: 'Müzik' },
+  { value: 'GARDEN', label: 'Bahçe' },
+  { value: 'OFFICE', label: 'Ofis & Kırtasiye' },
+  { value: 'JEWELRY', label: 'Takı & Aksesuar' },
+  { value: 'SHOES', label: 'Ayakkabı' },
+  { value: 'BABY', label: 'Anne & Bebek' },
   { value: 'OTHER', label: 'Diğer' }
 ];
 

@@ -1,0 +1,95 @@
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 36rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  overflow: hidden;
+}
+
+.profile-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: linear-gradient(135deg,#3b82f6,#6366f1);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  flex-shrink: 0;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-initials {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 1.25rem;
+}
+
+.profile-title { display: grid; gap: .25rem; }
+.profile-name { margin: 0; font-size: 1.25rem; color: #0f172a; }
+.profile-email { font-size: .875rem; color: #64748b; }
+
+/* Follow Stats */
+.profile-stats {
+  display: flex;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stat-item:hover {
+  background-color: #f8fafc;
+}
+
+.stat-number {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.profile-body { padding: 1rem 1.25rem; display: grid; gap: .5rem; }
+.profile-row { display: flex; align-items: center; justify-content: space-between; }
+.profile-label { font-size: .875rem; color: #64748b; }
+.profile-value { font-size: .95rem; color: #0f172a; }
+
+.profile-loading, .profile-error {
+  margin-top: 4rem;
+  background: #fff;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  border-radius: .75rem;
+  padding: .75rem 1rem;
+}
+.profile-error { border-color:#fecaca; color:#991b1b; }

@@ -34,25 +34,31 @@ apiClient.interceptors.response.use(
   (res) => {
     // Image URL'lerini tam URL'ye çevir
     if (res.data?.data) {
-      const processPostImages = (post) => {
-        if (post.imageUrls && Array.isArray(post.imageUrls)) {
-          post.imageUrls = post.imageUrls.map(url => {
-            if (url.startsWith('/uploads/')) {
-              return `${API_BASE_URL}${url}`;
-            }
-            return url;
-          });
+      const normalizeImageUrls = (obj) => {
+        if (!obj || typeof obj !== 'object') return obj;
+
+        // Kök nesne user ise veya herhangi bir objede profileImage varsa
+        if (obj.profileImage && typeof obj.profileImage === 'string' && obj.profileImage.startsWith('/uploads/')) {
+          obj.profileImage = `${API_BASE_URL}${obj.profileImage}`;
         }
-        if (post.user?.profileImage && post.user.profileImage.startsWith('/uploads/')) {
-          post.user.profileImage = `${API_BASE_URL}${post.user.profileImage}`;
+
+        // Post görselleri
+        if (Array.isArray(obj.imageUrls)) {
+          obj.imageUrls = obj.imageUrls.map((url) =>
+            typeof url === 'string' && url.startsWith('/uploads/') ? `${API_BASE_URL}${url}` : url
+          );
         }
-        return post;
+        // Post içindeki user
+        if (obj.user?.profileImage && obj.user.profileImage.startsWith('/uploads/')) {
+          obj.user.profileImage = `${API_BASE_URL}${obj.user.profileImage}`;
+        }
+        return obj;
       };
 
       if (Array.isArray(res.data.data)) {
-        res.data.data = res.data.data.map(processPostImages);
+        res.data.data = res.data.data.map(normalizeImageUrls);
       } else {
-        res.data.data = processPostImages(res.data.data);
+        res.data.data = normalizeImageUrls(res.data.data);
       }
     }
     return res;
