@@ -330,28 +330,32 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          {/* Follow Button - Sağ tarafta */}
+          {/* Modern Follow Button */}
           {!isOwnProfile && (
             <button
               onClick={handleFollowToggle}
               disabled={followLoading}
-              style={{
-                padding: '8px 24px',
-                borderRadius: '6px',
-                border: '1px solid #ddd',
-                background: isFollowing ? '#f8f9fa' : '#007bff',
-                color: isFollowing ? '#333' : 'white',
-                cursor: followLoading ? 'not-allowed' : 'pointer',
-                fontWeight: '500',
-                fontSize: '14px',
-                opacity: followLoading ? 0.7 : 1
-              }}
+              className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
             >
-              {followLoading ? 'Yükleniyor...' : (isFollowing ? 'Takip Ediliyor' : 'Takip Et')}
+              {followLoading ? (
+                <>
+                  <div className="loading-spinner" style={{
+                    width: '12px',
+                    height: '12px',
+                    border: '2px solid currentColor',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  Yükleniyor...
+                </>
+              ) : (
+                isFollowing ? 'Takip Ediliyor' : 'Takip Et'
+              )}
             </button>
           )}
         </div>
-
+  
         {/* Follow Stats */}
         <div className="profile-stats">
           <button className="stat-item" onClick={() => openModal('followers')}>
@@ -363,8 +367,8 @@ export default function ProfilePage() {
             <span className="stat-label">Takip Edilenler</span>
           </button>
         </div>
-
-        {/* Tabs - Takipçiler kısmının hemen altında */}
+  
+        {/* Modern Tabs */}
         <div className="profile-tabs">
           <div className="tab-buttons">
             {[
@@ -386,7 +390,7 @@ export default function ProfilePage() {
             {renderTabContent()}
           </div>
         </div>
-
+  
         <div className="profile-body">
           <div className="profile-row">
             <span className="profile-label">Kayıt Tarihi</span>
@@ -398,7 +402,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
+  
       <FollowModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

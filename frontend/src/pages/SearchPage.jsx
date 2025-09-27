@@ -4,7 +4,7 @@ import { searchUsers } from '../services/api/user';
 import { searchPosts } from '../services/api/posts';
 import { useNavigate } from 'react-router-dom';
 import PostCard from '../components/posts/PostCard';
-import '../styles/pages/feed.css';
+import '../styles/pages/search.css';
 
 export default function SearchPage() {
   const [q, setQ] = useState('');
@@ -44,30 +44,35 @@ export default function SearchPage() {
   }, [location.search]);
 
   return (
-    <div className="feed-page">
-      <div className="feed-container">
-        <main className="feed-content">
-          <h2 className="section-title">“{q}” için arama sonuçları</h2>
+    <div className="search-page">
+      <div className="search-container">
+        <main className="search-content">
+          <h2 className="section-title">"{q}" için arama sonuçları</h2>
 
-          <section>
+          <section className="search-section">
             <h3>Kullanıcılar</h3>
-            {users.length === 0 ? <div className="empty-state">Sonuç yok</div> : (
-              <div className="follow-list">
+            {users.length === 0 ? (
+              <div className="empty-state">Sonuç yok</div>
+            ) : (
+              <div className="search-users-list">
                 {users.map(u => (
                   <div
                     key={u.id}
-                    className="follow-item"
+                    className="search-user-item"
                     onClick={() => navigate(`/profile/${u.id}`)}
-                    style={{ cursor: 'pointer' }}
                   >
-                    <div className="follow-avatar">
-                      {u.profileImage ? <img src={getFullImageUrl(u.profileImage)} alt="" /> : (
-                        <div className="follow-initials">{u.firstName?.[0]}{u.lastName?.[0]}</div>
+                    <div className="search-user-avatar">
+                      {u.profileImage ? (
+                        <img src={getFullImageUrl(u.profileImage)} alt="" />
+                      ) : (
+                        <div className="search-user-initials">
+                          {u.firstName?.[0]}{u.lastName?.[0]}
+                        </div>
                       )}
                     </div>
-                    <div className="follow-info">
-                      <div className="follow-name">{u.firstName} {u.lastName}</div>
-                      <div className="follow-email">@{u.email?.split('@')[0]}</div>
+                    <div className="search-user-info">
+                      <div className="search-user-name">{u.firstName} {u.lastName}</div>
+                      <div className="search-user-email">@{u.email?.split('@')[0]}</div>
                     </div>
                   </div>
                 ))}
@@ -75,14 +80,20 @@ export default function SearchPage() {
             )}
           </section>
 
-          <section style={{ marginTop: 24 }}>
+          <section className="search-section">
             <h3>İlanlar</h3>
-            {posts.length === 0 ? <div className="empty-state">Sonuç yok</div> : posts.map(p => (
-              <PostCard key={p.id} post={p} />
-            ))}
+            {posts.length === 0 ? (
+              <div className="empty-state">Sonuç yok</div>
+            ) : (
+              <div className="search-posts-list">
+                {posts.map(p => (
+                  <PostCard key={p.id} post={p} />
+                ))}
+              </div>
+            )}
           </section>
 
-          {loading ? <div className="loading-state">Yükleniyor…</div> : null}
+          {loading && <div className="loading-state">Yükleniyor…</div>}
         </main>
       </div>
     </div>
