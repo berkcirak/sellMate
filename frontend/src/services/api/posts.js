@@ -20,3 +20,7 @@ export const getPostsByUser = async (userId) => {
   const res = await apiClient.get(`/posts/user/${userId}`);
   return res.data?.data ?? [];
 }
+export const getPost = async (postId) => {
+  const res = await apiClient.get(`/posts/${postId}`);
+  return res.data?.data;
+};

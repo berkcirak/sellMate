@@ -6,6 +6,7 @@ import { getCommentsByUser } from '../services/api/comment';
 import { useParams } from 'react-router-dom';
 import FollowModal from '../components/profile/FollowModal';
 import PostCard from '../components/posts/PostCard';
+import { getPost } from '../services/api/posts';
 import '../styles/pages/profile.css';
 
 export default function ProfilePage() {
@@ -34,7 +35,29 @@ export default function ProfilePage() {
     }
     return url;
   };
-
+  const LikePostCard = ({ like }) => {
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      const fetchPost = async () => {
+        try {
+          const postData = await getPost(like.postId);
+          setPost(postData);
+        } catch (e) {
+          console.error('Error fetching post:', e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPost();
+    }, [like.postId]);
+  
+    if (loading) return <div>Yükleniyor...</div>;
+    if (!post) return <div>Gönderi bulunamadı</div>;
+  
+    return <PostCard post={post} />;
+  };
   const loadTabData = useCallback(async () => {
     if (!me?.id) return;
     
@@ -166,25 +189,16 @@ export default function ProfilePage() {
           </div>
         );
       
-      case 'likes':
-        return likes.length === 0 ? (
-          <div className="empty-state">Henüz beğeni yok.</div>
-        ) : (
-          <div className="likes-list">
-            {likes.map(like => (
-              <div key={like.id} className="like-item" style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '14px', color: '#666' }}>
-                    {formatDate(new Date(like.createdAt))}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <strong>Beğendi:</strong> {like.post?.title || 'Gönderi'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
+        case 'likes':
+          return likes.length === 0 ? (
+            <div className="empty-state">Henüz beğeni yok.</div>
+          ) : (
+            <div className="posts-list">
+              {likes.map(like => (
+                <LikePostCard key={like.id} like={like} />
+              ))}
+            </div>
+          );
       
       case 'comments':
         return comments.length === 0 ? (
@@ -267,8 +281,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Tabs - Takipçiler kısmının hemen altında */}
-        <div className="profile-tabs" style={{ marginTop: '20px' }}>
-          <div className="tab-buttons" style={{ display: 'flex', borderBottom: '1px solid #ddd' }}>
+        <div className="profile-tabs">
+          <div className="tab-buttons">
             {[
               { key: 'posts', label: 'Gönderiler' },
               { key: 'likes', label: 'Beğeniler' },
@@ -278,22 +292,13 @@ export default function ProfilePage() {
                 key={tab.key}
                 className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.key)}
-                style={{
-                  padding: '12px 20px',
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  borderBottom: activeTab === tab.key ? '2px solid #007bff' : '2px solid transparent',
-                  color: activeTab === tab.key ? '#007bff' : '#666',
-                  fontWeight: activeTab === tab.key ? '600' : '400'
-                }}
               >
                 {tab.label}
               </button>
             ))}
           </div>
           
-          <div className="tab-content" style={{ padding: '20px 0' }}>
+          <div className="tab-content">
             {renderTabContent()}
           </div>
         </div>
