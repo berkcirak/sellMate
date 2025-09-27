@@ -1,18 +1,13 @@
+// frontend/src/components/profile/FollowModal.jsx
 import { useEffect, useState } from 'react';
 import { getFollowers, getFollowing, followUser, unfollowUser } from '../../services/api/user';
-import '../ui/Modal';
+import Modal from '../ui/Modal';
 import '../../styles/components/follow-modal.css';
 
-export default function FollowModal({ 
-  isOpen, 
-  onClose, 
-  userId, 
-  type = 'followers', // 'followers' veya 'following'
-  currentUserId 
-}) {
+export default function FollowModal({ isOpen, onClose, userId, type, currentUserId, onFollowChange }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [following, setFollowing] = useState(new Set());
+  const [followStates, setFollowStates] = useState({});
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -23,12 +18,21 @@ export default function FollowModal({
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const data = type === 'followers' 
+      const data = type === 'followers'
         ? await getFollowers(userId)
         : await getFollowing(userId);
-      // Sadece kendi profilini görüntülerken kendini gizle
-      const list = (data || []).filter(u => !(userId === currentUserId && u.id === currentUserId));
-      setUsers(list);
+      
+      setUsers(data || []);
+      
+      // Her kullanıcı için takip durumunu kontrol et
+      const states = {};
+      for (const user of data || []) {
+        if (user.id !== currentUserId) {
+          const isFollowing = await checkFollowStatus(user.id);
+          states[user.id] = isFollowing;
+        }
+      }
+      setFollowStates(states);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
@@ -36,43 +40,51 @@ export default function FollowModal({
     }
   };
 
-  const handleFollow = async (targetUserId) => {
+  const checkFollowStatus = async (targetUserId) => {
     try {
-      await followUser(targetUserId);
-      setFollowing(prev => new Set([...prev, targetUserId]));
+      const followingList = await getFollowing(currentUserId);
+      return followingList.some(user => user.id === targetUserId);
     } catch (error) {
-      console.error('Error following user:', error);
+      console.error('Error checking follow status:', error);
+      return false;
     }
   };
 
-  const handleUnfollow = async (targetUserId) => {
+  const handleFollowToggle = async (targetUserId) => {
     try {
-      await unfollowUser(targetUserId);
-      setFollowing(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(targetUserId);
-        return newSet;
-      });
+      const isCurrentlyFollowing = followStates[targetUserId];
+      
+      if (isCurrentlyFollowing) {
+        await unfollowUser(targetUserId);
+        setFollowStates(prev => ({ ...prev, [targetUserId]: false }));
+        // Ana sayfaya bildir
+        onFollowChange?.(targetUserId, false);
+      } else {
+        await followUser(targetUserId);
+        setFollowStates(prev => ({ ...prev, [targetUserId]: true }));
+        // Ana sayfaya bildir
+        onFollowChange?.(targetUserId, true);
+      }
     } catch (error) {
-      console.error('Error unfollowing user:', error);
+      console.error('Error toggling follow:', error);
     }
   };
 
   const getFullImageUrl = (url) => {
-    if (!url) return null;
+    if (!url) return '';
     if (url.startsWith('/uploads/')) {
       return `http://localhost:8080${url}`;
     }
     return url;
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content follow-modal" onClick={e => e.stopPropagation()}>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="follow-modal">
         <div className="modal-header">
-          <h3>{type === 'followers' ? 'Takipçiler' : 'Takip Edilenler'}</h3>
+          <h3 className="modal-title">
+            {type === 'followers' ? 'Takipçiler' : 'Takip Edilenler'}
+          </h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         
@@ -80,45 +92,39 @@ export default function FollowModal({
           {loading ? (
             <div className="loading">Yükleniyor...</div>
           ) : (
-            <div className="follow-list">
-              {users.map(user => {
-                const isFollowing = following.has(user.id);
-                const isCurrentUser = user.id === currentUserId;
-                
-                return (
-                  <div key={user.id} className="follow-item">
-                    <div className="follow-avatar">
+            <div className="users-list">
+              {users.map(user => (
+                <div key={user.id} className="user-item">
+                  <div className="user-info">
+                    <div className="user-avatar">
                       {user.profileImage ? (
                         <img src={getFullImageUrl(user.profileImage)} alt="" />
                       ) : (
-                        <div className="follow-initials">
-                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        <div className="user-initials">
+                          {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
                         </div>
                       )}
                     </div>
-                    
-                    <div className="follow-info">
-                      <div className="follow-name">
-                        {user.firstName} {user.lastName}
-                      </div>
-                      <div className="follow-email">@{user.email?.split('@')[0]}</div>
+                    <div className="user-details">
+                      <div className="user-name">{user.firstName} {user.lastName}</div>
+                      <div className="user-email">@{user.email.split('@')[0]}</div>
                     </div>
-                    
-                    {!isCurrentUser && (
-                      <button 
-                        className={`follow-btn ${isFollowing ? 'following' : 'not-following'}`}
-                        onClick={() => isFollowing ? handleUnfollow(user.id) : handleFollow(user.id)}
-                      >
-                        {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
-                      </button>
-                    )}
                   </div>
-                );
-              })}
+                  
+                  {user.id !== currentUserId && (
+                    <button
+                      className={`follow-button ${followStates[user.id] ? 'following' : 'not-following'}`}
+                      onClick={() => handleFollowToggle(user.id)}
+                    >
+                      {followStates[user.id] ? 'Takip Ediliyor' : 'Takip Et'}
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

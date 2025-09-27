@@ -24,3 +24,7 @@ export const getPost = async (postId) => {
   const res = await apiClient.get(`/posts/${postId}`);
   return res.data?.data;
 };
+export const getPostByCommentId = async (commentId) => {
+  const res = await apiClient.get(`/posts/bycomment/${commentId}`);
+  return res.data?.data;
+};

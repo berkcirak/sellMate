@@ -6,7 +6,7 @@ import FeedPage from '../pages/FeedPage';
 import Layout from '../components/layout/Layout';
 import ProfilePage from '../pages/ProfilePage';
 import SearchPage from '../pages/SearchPage';
-
+import PostDetailPage from '../pages/PostDetailPage';
 // ScrollToTop component
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -37,6 +37,7 @@ const AppRouter = () => {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />
           <Route path="search" element={<SearchPage />} />
+          <Route path="post/:postId" element={<PostDetailPage />} />
           <Route index element={<Navigate to="/feed" replace />} />
         </Route>
 

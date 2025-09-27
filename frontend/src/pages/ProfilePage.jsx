@@ -1,12 +1,12 @@
+// frontend/src/pages/ProfilePage.jsx
 import { useEffect, useState, useCallback } from 'react';
 import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing } from '../services/api/user';
-import { getPostsByUser } from '../services/api/posts';
+import { getPostsByUser, getPostByCommentId, getPost } from '../services/api/posts';
 import { getUserLikes } from '../services/api/like';
 import { getCommentsByUser } from '../services/api/comment';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import FollowModal from '../components/profile/FollowModal';
 import PostCard from '../components/posts/PostCard';
-import { getPost } from '../services/api/posts';
 import '../styles/pages/profile.css';
 
 export default function ProfilePage() {
@@ -35,6 +35,24 @@ export default function ProfilePage() {
     }
     return url;
   };
+
+  // Modal'dan gelen takip durumu değişikliklerini handle et
+  const handleModalFollowChange = useCallback((targetUserId, isNowFollowing) => {
+    console.log('Modal follow change:', { targetUserId, isNowFollowing, modalType, meId: me?.id, authId: auth?.id });
+    
+    // Sadece kendi profilimdeyse sayıları güncelle
+    if (auth?.id === me?.id) {
+      // Kendi profilimdeyim, takip edilen sayısını güncelle
+      setMe(prev => ({
+        ...prev,
+        followingCount: isNowFollowing 
+          ? (prev.followingCount || 0) + 1 
+          : Math.max(0, (prev.followingCount || 0) - 1)
+      }));
+    }
+    // Başka birinin profilindeyse sayıları değiştirme (sabit kalsın)
+  }, [auth?.id, me?.id]);
+
   const LikePostCard = ({ like }) => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -58,6 +76,82 @@ export default function ProfilePage() {
   
     return <PostCard post={post} />;
   };
+
+  const CommentItem = ({ comment }) => {
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const fetchPost = async () => {
+        try {
+          const postData = await getPostByCommentId(comment.id);
+          setPost(postData);
+        } catch (e) {
+          console.error('Error fetching post by comment:', e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPost();
+    }, [comment.id]);
+
+    if (loading) {
+      return (
+        <div className="comment-item" style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '14px', color: '#666' }}>
+              {formatDate(new Date(comment.createdAt))}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div><strong>Gönderi:</strong> Yükleniyor...</div>
+              <div style={{ marginTop: '4px' }}>{comment.content}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!post) {
+      return (
+        <div className="comment-item" style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '14px', color: '#666' }}>
+              {formatDate(new Date(comment.createdAt))}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div><strong>Gönderi:</strong> Gönderi bulunamadı</div>
+              <div style={{ marginTop: '4px' }}>{comment.content}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <Link 
+        to={`/post/${post.id}`}
+        className="comment-item"
+        style={{ 
+          display: 'block',
+          padding: '12px', 
+          borderBottom: '1px solid #eee',
+          textDecoration: 'none',
+          color: 'inherit'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ fontSize: '14px', color: '#666' }}>
+            {formatDate(new Date(comment.createdAt))}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div><strong>Gönderi:</strong> {post.title || 'Bilinmeyen'}</div>
+            <div style={{ marginTop: '4px' }}>{comment.content}</div>
+          </div>
+        </div>
+      </Link>
+    );
+  };
+
   const loadTabData = useCallback(async () => {
     if (!me?.id) return;
     
@@ -189,16 +283,16 @@ export default function ProfilePage() {
           </div>
         );
       
-        case 'likes':
-          return likes.length === 0 ? (
-            <div className="empty-state">Henüz beğeni yok.</div>
-          ) : (
-            <div className="posts-list">
-              {likes.map(like => (
-                <LikePostCard key={like.id} like={like} />
-              ))}
-            </div>
-          );
+      case 'likes':
+        return likes.length === 0 ? (
+          <div className="empty-state">Henüz beğeni yok.</div>
+        ) : (
+          <div className="posts-list">
+            {likes.map(like => (
+              <LikePostCard key={like.id} like={like} />
+            ))}
+          </div>
+        );
       
       case 'comments':
         return comments.length === 0 ? (
@@ -206,17 +300,7 @@ export default function ProfilePage() {
         ) : (
           <div className="comments-list">
             {comments.map(comment => (
-              <div key={comment.id} className="comment-item" style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '14px', color: '#666' }}>
-                    {formatDate(new Date(comment.createdAt))}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div><strong>Gönderi:</strong> {comment.post?.title || 'Bilinmeyen'}</div>
-                    <div style={{ marginTop: '4px' }}>{comment.content}</div>
-                  </div>
-                </div>
-              </div>
+              <CommentItem key={comment.id} comment={comment} />
             ))}
           </div>
         );
@@ -321,6 +405,7 @@ export default function ProfilePage() {
         userId={me.id}
         type={modalType}
         currentUserId={auth?.id}
+        onFollowChange={handleModalFollowChange}
       />
     </div>
   );
