@@ -1,4 +1,4 @@
-/* Layout Styles */
+
 .layout {
   display: flex;
   min-height: 100vh;
@@ -10,6 +10,29 @@
   margin-left: 16rem;
   padding: 0;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Navbar kesinlikle sabit kalacak */
+.top-navbar {
+  position: fixed;
+  top: 0;
+  left: 16rem;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 60px;
+}
+
+/* Page content alanı - navbar için yer bırak */
+.page-content {
+  flex: 1;
+  margin-top: 60px; /* navbar yüksekliği kadar boşluk */
+  overflow-y: auto;
 }
 
 /* Responsive */
@@ -17,10 +40,31 @@
   .layout-main {
     margin-left: 4rem;
   }
+  
+  .top-navbar {
+    left: 4rem;
+  }
 }
 
 /* Page Content */
 .layout-main > * {
   min-height: 100vh;
 }
-.layout-main > .top-navbar { min-height: auto; }
+.layout-main > .top-navbar { 
+  min-height: auto; 
+  position: fixed;
+  top: 0;
+  left: 16rem;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 60px;
+}
+
+@media (max-width: 768px) {
+  .layout-main > .top-navbar {
+    left: 4rem;
+  }
+}

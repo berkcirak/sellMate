@@ -1,3 +1,4 @@
+// frontend/src/components/layout/Layout.jsx
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
@@ -10,7 +11,9 @@ export default function Layout() {
       <Sidebar />
       <main className="layout-main">
         <Navbar />
-        <Outlet />
+        <div className="page-content">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
