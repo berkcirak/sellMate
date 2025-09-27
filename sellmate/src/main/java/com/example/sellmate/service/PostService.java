@@ -3,11 +3,14 @@ package com.example.sellmate.service;
 import com.example.sellmate.dto.request.CreatePostRequest;
 import com.example.sellmate.dto.request.UpdatePostRequest;
 import com.example.sellmate.dto.response.PostResponse;
+import com.example.sellmate.entity.Comment;
 import com.example.sellmate.entity.Post;
 import com.example.sellmate.entity.User;
+import com.example.sellmate.exception.comment.CommentNotFoundException;
 import com.example.sellmate.exception.post.PostNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.mapper.PostMapper;
+import com.example.sellmate.repository.CommentRepository;
 import com.example.sellmate.repository.PostRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,12 +25,13 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final FileUploadService fileUploadService;
-
-    public PostService(UserService userService, PostMapper postMapper, PostRepository postRepository, FileUploadService fileUploadService){
+    private final CommentRepository commentRepository;
+    public PostService(UserService userService, PostMapper postMapper, PostRepository postRepository, FileUploadService fileUploadService, CommentRepository commentRepository){
         this.userService=userService;
         this.postMapper=postMapper;
         this.postRepository=postRepository;
         this.fileUploadService = fileUploadService;
+        this.commentRepository = commentRepository;
     }
 
     public PostResponse createPost(CreatePostRequest request){
@@ -85,6 +89,11 @@ public class PostService {
         if (s.isEmpty()) return List.of();
         List<Post> posts = postRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(s, s);
         return posts.stream().map(postMapper::toResponse).toList();
+    }
+    public PostResponse getPostByCommentId(Long commentId){
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
+        Post post = comment.getPost();
+        return postMapper.toResponse(post);
     }
 
 }

@@ -61,4 +61,9 @@ public class PostController {
         List<PostResponse> postResponses = postService.searchPosts(q);
         return ApiResponse.success(postResponses, "Posts retrieved successfully", httpServletRequest.getRequestURI());
     }
+    @GetMapping("/bycomment/{commentId}")
+    public ApiResponse<PostResponse> getPostByComment(@PathVariable Long commentId, HttpServletRequest httpServletRequest){
+        PostResponse postResponse = postService.getPostByCommentId(commentId);
+        return ApiResponse.success(postResponse, "Post retrieved successfully", httpServletRequest.getRequestURI());
+    }
 }
