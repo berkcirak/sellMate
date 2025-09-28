@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SellMate'a Hoş Geldiniz!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8fafc;">
+<table role="presentation" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <!-- Header -->
+    <tr>
+        <td style="background: linear-gradient(135deg, #3b82f6, #6366f1); padding: 2rem; text-align: center; border-radius: 1rem 1rem 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 1.5rem;">🎉 SellMate'a Hoş Geldiniz!</h1>
+        </td>
+    </tr>
+
+    <!-- Content -->
+    <tr>
+        <td style="padding: 2rem; background: #f8fafc; border-radius: 0 0 1rem 1rem;">
+            <h2 style="color: #0f172a; margin: 0 0 1rem 0;">Merhaba <span th:text="${firstName}">John</span> <span th:text="${lastName}">Doe</span>!</h2>
+
+            <p style="color: #374151; font-size: 1rem; line-height: 1.6; margin: 0 0 1.5rem 0;">
+                SellMate ailesine katıldığınız için çok mutluyuz! 🚀
+            </p>
+
+            <p style="color: #374151; font-size: 1rem; line-height: 1.6; margin: 0 0 1rem 0;">
+                Artık:
+            </p>
+
+            <ul style="color: #374151; font-size: 1rem; line-height: 1.6; margin: 0 0 2rem 0; padding-left: 1.5rem;">
+                <li>Ürünlerinizi satabilirsiniz</li>
+                <li>Diğer kullanıcıları takip edebilirsiniz</li>
+                <li>Beğendiğiniz ürünleri kaydedebilirsiniz</li>
+                <li>Güvenli ödeme sistemi kullanabilirsiniz</li>
+            </ul>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 2rem 0;">
+                <a href="http://localhost:3000/login"
+                   style="background: #3b82f6; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 0.5rem; display: inline-block; font-weight: 600; font-size: 1rem;">
+                    Hemen Başla!
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; text-align: center;">
+                <p style="color: #64748b; font-size: 0.875rem; margin: 0;">
+                    Bu e-postayı yanlışlıkla aldıysanız, lütfen dikkate almayın.
+                </p>
+                <p style="color: #64748b; font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+                    <a href="http://localhost:3000/unsubscribe" style="color: #3b82f6; text-decoration: none;">Abonelikten çık</a>
+                </p>
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

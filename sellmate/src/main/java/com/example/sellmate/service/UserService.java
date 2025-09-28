@@ -6,6 +6,7 @@ import com.example.sellmate.dto.response.UserResponse;
 import com.example.sellmate.entity.Follow;
 import com.example.sellmate.entity.User;
 import com.example.sellmate.entity.Wallet;
+import com.example.sellmate.event.WelcomeEmailEvent;
 import com.example.sellmate.exception.user.EmailAlreadyExistsException;
 import com.example.sellmate.exception.user.EmailNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
@@ -30,12 +31,14 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final FileUploadService fileUploadService;
     private final FollowRepository followRepository;
-    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, FileUploadService fileUploadService, FollowRepository followRepository){
+    private final EmailEventProducer emailEventProducer;
+    public UserService(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, FileUploadService fileUploadService, FollowRepository followRepository, EmailEventProducer emailEventProducer){
         this.userRepository=userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileUploadService = fileUploadService;
         this.followRepository = followRepository;
+        this.emailEventProducer = emailEventProducer;
     }
 
     public UserResponse saveUser(CreateUserRequest request){
@@ -52,6 +55,12 @@ public class UserService {
         wallet.setUser(user);
         user.setWallet(wallet);
         User newUser = userRepository.save(user);
+        WelcomeEmailEvent event = new WelcomeEmailEvent(
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName()
+        );
+        emailEventProducer.sendWelcomeEmailEvent(event);
         return userMapper.toResponse(newUser);
     }
     public List<UserResponse> getUsers(){
