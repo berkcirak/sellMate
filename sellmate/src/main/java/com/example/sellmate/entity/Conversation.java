@@ -13,4 +13,19 @@ public class Conversation extends BaseEntity {
     @Column(nullable = false)
     private Long userBId;
 
+    public Long getUserAId() {
+        return userAId;
+    }
+
+    public void setUserAId(Long userAId) {
+        this.userAId = userAId;
+    }
+
+    public Long getUserBId() {
+        return userBId;
+    }
+
+    public void setUserBId(Long userBId) {
+        this.userBId = userBId;
+    }
 }

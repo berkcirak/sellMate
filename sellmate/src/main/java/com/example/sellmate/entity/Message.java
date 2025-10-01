@@ -2,8 +2,10 @@ package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 
+@Entity
 public class Message  extends BaseEntity {
 
     @ManyToOne(optional = false)
