@@ -1,8 +1,11 @@
 package com.example.sellmate.service;
 
+import com.example.sellmate.dto.response.ConversationResponse;
 import com.example.sellmate.entity.Conversation;
 import com.example.sellmate.exception.comment.CommentNotFoundException;
+import com.example.sellmate.exception.conversation.ConversationNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
+import com.example.sellmate.mapper.ConversationMapper;
 import com.example.sellmate.repository.ConversationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +17,15 @@ public class ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final UserService userService;
+    private final ConversationMapper conversationMapper;
 
-    public ConversationService(ConversationRepository conversationRepository, UserService userService){
+    public ConversationService(ConversationRepository conversationRepository, UserService userService, ConversationMapper conversationMapper){
         this.conversationRepository=conversationRepository;
         this.userService=userService;
+        this.conversationMapper=conversationMapper;
     }
     @Transactional
-    public Conversation getOrCreateConversation(Long otherUserId){
+    public ConversationResponse getOrCreateConversation(Long otherUserId){
         Long me = userService.getCurrentUserId();
         if (me.equals(otherUserId)){
             throw new IllegalArgumentException("Self conversation is not allowed");
@@ -28,31 +33,37 @@ public class ConversationService {
         Long a = Math.min(me, otherUserId);
         Long b = Math.max(me, otherUserId);
 
-        return conversationRepository.findByUserAIdAndUserBId(a, b)
+        Conversation conversation = conversationRepository.findByUserAIdAndUserBId(a, b)
                 .orElseGet(() -> {
-                    Conversation conversation = new Conversation();
-                    conversation.setUserAId(a);
-                    conversation.setUserBId(b);
-                    return conversationRepository.save(conversation);
+                    Conversation newConversation = new Conversation();
+                    newConversation.setUserAId(a);
+                    newConversation.setUserBId(b);
+                    return conversationRepository.save(newConversation);
                 });
+        return conversationMapper.toResponse(conversation);
     }
     @Transactional(readOnly = true)
-    public Conversation getByIdOrThrow(Long conversationId){
-        return conversationRepository.findById(conversationId).orElseThrow(() -> new CommentNotFoundException(conversationId));
+    public ConversationResponse getByIdOrThrow(Long conversationId){
+        Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(() -> new CommentNotFoundException(conversationId));
+        return conversationMapper.toResponse(conversation);
     }
     @Transactional(readOnly = true)
     public void assertCurrentUserIsParticipant(Long conversationId){
         Long myId = userService.getCurrentUserId();
-        Conversation conversation = getByIdOrThrow(conversationId);
-        if (!conversation.getUserAId().equals(myId) || !conversation.getUserBId().equals(myId)){
+        ConversationResponse conversation = getByIdOrThrow(conversationId);
+        if (!conversation.userAId().equals(myId) || !conversation.userBId().equals(myId)){
             throw new UnauthorizedException("You are not participant this conversation");
         }
     }
     @Transactional(readOnly = true)
-    public List<Conversation> listMyConversations(){
+    public List<ConversationResponse> listMyConversations(){
         Long myId = userService.getCurrentUserId();
-        return conversationRepository.findByUserAIdOrUserBId(myId, myId);
+        List<Conversation> conversationList = conversationRepository.findByUserAIdOrUserBId(myId, myId);
+        return conversationList.stream().map(conversationMapper::toResponse).toList();
     }
 
 
+    public Conversation getByIdOrThrowEntity(Long conversationId) {
+        return conversationRepository.findById(conversationId).orElseThrow(() -> new ConversationNotFoundException(conversationId));
+    }
 }

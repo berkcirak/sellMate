@@ -29,7 +29,7 @@ public class MessageService {
     @Transactional
     public MessageResponse send(SendMessageRequest request){
         Long senderId = userService.getCurrentUserId();
-        Conversation conversation = conversationService.getByIdOrThrow(request.conversationId());
+        Conversation conversation = conversationService.getByIdOrThrowEntity(request.conversationId());
         if (!isParticipant(conversation, senderId)){
             throw new UnauthorizedException("You are not participant of this conversation");
         }
@@ -40,7 +40,7 @@ public class MessageService {
     @Transactional(readOnly = true)
     public List<MessageResponse> getRecentMessages(Long conversationId){
         Long myId = userService.getCurrentUserId();
-        Conversation conversation = conversationService.getByIdOrThrow(conversationId);
+        Conversation conversation = conversationService.getByIdOrThrowEntity(conversationId);
         if (!isParticipant(conversation, myId)){
             throw new UnauthorizedException("You are not participant of this conversation");
         }
