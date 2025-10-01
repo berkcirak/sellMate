@@ -4,6 +4,7 @@ import com.example.sellmate.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Message  extends BaseEntity {
@@ -13,6 +14,7 @@ public class Message  extends BaseEntity {
     @Column(nullable = false)
     private Long senderId;
     @Column(columnDefinition = "TEXT", nullable = false)
+    @Size(max = 1000)
     private String content;
 
     public Conversation getConversation() {

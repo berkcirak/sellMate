@@ -1,4 +1,12 @@
 package com.example.sellmate.dto.request;
 
-public record SendMessageRequest(Long conversationId, String content) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record SendMessageRequest(
+        Long conversationId,
+        @NotBlank
+        @Size(max = 1000)
+        String content
+) {
 }

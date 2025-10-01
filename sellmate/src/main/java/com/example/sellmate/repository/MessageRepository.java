@@ -2,12 +2,11 @@ package com.example.sellmate.repository;
 
 import com.example.sellmate.entity.Conversation;
 import com.example.sellmate.entity.Message;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    List<Message> findByConversationOrderByCreatedAtDesc(Conversation conversation, Pageable pageable);
+    List<Message> findByConversationOrderByCreatedAtAsc(Conversation conversation);
 }
