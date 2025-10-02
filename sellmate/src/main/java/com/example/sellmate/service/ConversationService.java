@@ -42,14 +42,14 @@ public class ConversationService {
                 });
     }
     @Transactional(readOnly = true)
-    public ConversationResponse getByIdOrThrow(Long conversationId){
+    public ConversationResponse getById(Long conversationId){
         Conversation conversation = conversationRepository.findById(conversationId).orElseThrow(() -> new CommentNotFoundException(conversationId));
         return conversationMapper.toResponse(conversation);
     }
     @Transactional(readOnly = true)
     public void assertCurrentUserIsParticipant(Long conversationId){
         Long myId = userService.getCurrentUserId();
-        ConversationResponse conversation = getByIdOrThrow(conversationId);
+        ConversationResponse conversation = getById(conversationId);
         if (!conversation.userAId().equals(myId) || !conversation.userBId().equals(myId)){
             throw new UnauthorizedException("You are not participant this conversation");
         }
