@@ -29,7 +29,7 @@ public class MessageService {
     @Transactional
     public MessageResponse send(SendMessageRequest request){
         Long senderId = userService.getCurrentUserId();
-        Conversation conversation = conversationService.getByIdOrThrowEntity(request.conversationId());
+        Conversation conversation = conversationService.getOrCreateConversation(request.userId());
         if (!isParticipant(conversation, senderId)){
             throw new UnauthorizedException("You are not participant of this conversation");
         }

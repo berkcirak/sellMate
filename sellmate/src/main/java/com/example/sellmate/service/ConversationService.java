@@ -25,7 +25,7 @@ public class ConversationService {
         this.conversationMapper=conversationMapper;
     }
     @Transactional
-    public ConversationResponse getOrCreateConversation(Long otherUserId){
+    public Conversation getOrCreateConversation(Long otherUserId){
         Long me = userService.getCurrentUserId();
         if (me.equals(otherUserId)){
             throw new IllegalArgumentException("Self conversation is not allowed");
@@ -33,14 +33,13 @@ public class ConversationService {
         Long a = Math.min(me, otherUserId);
         Long b = Math.max(me, otherUserId);
 
-        Conversation conversation = conversationRepository.findByUserAIdAndUserBId(a, b)
+        return conversationRepository.findByUserAIdAndUserBId(a, b)
                 .orElseGet(() -> {
                     Conversation newConversation = new Conversation();
                     newConversation.setUserAId(a);
                     newConversation.setUserBId(b);
                     return conversationRepository.save(newConversation);
                 });
-        return conversationMapper.toResponse(conversation);
     }
     @Transactional(readOnly = true)
     public ConversationResponse getByIdOrThrow(Long conversationId){
