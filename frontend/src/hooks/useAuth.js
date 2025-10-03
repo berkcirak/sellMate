@@ -20,6 +20,12 @@ export const useAuth = () => {
         console.log('Token received:', token);
         
         localStorage.setItem('token', token);
+        
+        // Kullanıcı ID'sini de sakla (mesajlaşma için gerekli)
+        if (response.data.user?.id) {
+          localStorage.setItem('currentUserId', response.data.user.id.toString());
+        }
+        
         window.location.href = '/feed';
         
         return response;
@@ -67,6 +73,7 @@ export const useAuth = () => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('currentUserId');
     window.location.href = '/login';
   };
 
