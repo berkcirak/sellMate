@@ -128,22 +128,8 @@ export default function MessageBox({ conversation, otherUser, isOpen, onClose })
           ) : (
             <div className="messages-list">
               {messages.map((message) => {
-                // Mesajın gönderen ID'sini al
                 const senderId = message.senderId ? parseInt(message.senderId) : null;
-                
-                // Current user ID ile karşılaştır
-                const isMe = currentUserId && senderId && senderId === currentUserId;
-                
-                // Debug için console.log
-                console.log('🔍 Message Debug:', {
-                  messageId: message.id,
-                  senderId: senderId,
-                  currentUserId: currentUserId,
-                  isMe: isMe,
-                  content: message.content,
-                  className: isMe ? 'sent' : 'received'
-                });
-                
+                const isMe = currentUserId && senderId && senderId === currentUserId;    
                 return (
                   <div key={message.id} className={`message-item ${isMe ? 'sent' : 'received'}`}>
                     <div className="message-content">
