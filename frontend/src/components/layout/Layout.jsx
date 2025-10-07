@@ -1,5 +1,4 @@
-// frontend/src/components/layout/Layout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import ConversationList from '../messages/ConversationList';
@@ -11,6 +10,7 @@ export default function Layout() {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isMessageBoxOpen, setIsMessageBoxOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleSelectConversation = (conversation, user) => {
     setSelectedConversation(conversation);
@@ -23,7 +23,17 @@ export default function Layout() {
     setSelectedConversation(null);
     setSelectedUser(null);
   };
+  useEffect(() => {
+    const handleRefresh = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
 
+    window.addEventListener('conversationListRefresh', handleRefresh);
+    
+    return () => {
+      window.removeEventListener('conversationListRefresh', handleRefresh);
+    };
+  }, []);
   return (
     <div className="layout">
       <Sidebar />
@@ -37,6 +47,7 @@ export default function Layout() {
           <ConversationList 
             onSelectConversation={handleSelectConversation}
             selectedConversationId={selectedConversation?.id}
+            refreshTrigger={refreshTrigger}
           />
         </div>
       </main>

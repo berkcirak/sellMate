@@ -77,6 +77,8 @@ export default function ProfilePage() {
   const handleCloseMessageBox = () => {
     setIsMessageBoxOpen(false);
     setMessageConversation(null);
+    const event = new CustomEvent('conversationListRefresh');
+    window.dispatchEvent(event);
   };
 
   const LikePostCard = ({ like }) => {
@@ -386,21 +388,9 @@ export default function ProfilePage() {
               <button
                 onClick={handleSendMessage}
                 className="message-button"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
               >
-                💬 Mesaj At
+          
+                <span>Mesaj At</span>
               </button>
             </div>
           )}

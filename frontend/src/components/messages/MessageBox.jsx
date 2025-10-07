@@ -92,12 +92,22 @@ export default function MessageBox({ conversation, otherUser, isOpen, onClose })
     setNewMessage('');
 
     try {
-      // WebSocket ile mesaj gönder
       const sentMessage = await sendMessageViaWebSocket(otherUser.id, messageContent);
-      if (sentMessage) {
-        setMessages(prev => [...prev, sentMessage]);
+      
+      if (sentMessage && currentUserId) {
+        const optimisticMessage = {
+          ...sentMessage,
+          senderId: currentUserId,
+          id: `temp_${Date.now()}`
+        };
+        setMessages(prev => [...prev, optimisticMessage]);
+        
+        // Conversation list'i yenile
+        const event = new CustomEvent('conversationListRefresh');
+        window.dispatchEvent(event);
       }
-    } catch  {
+    } catch (error) {
+      console.error('Error sending message:', error);
       setNewMessage(messageContent);
     }
   };

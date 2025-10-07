@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getMyConversations } from '../../services/api/conversation';
 import { getUserById, getMyProfile } from '../../services/api/user';
 import '../../styles/components/conversation-list.css';
 
-export default function ConversationList({ onSelectConversation, selectedConversationId }) {
+export default function ConversationList({ onSelectConversation, selectedConversationId, refreshTrigger }) {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [conversationUsers, setConversationUsers] = useState({});
@@ -16,59 +16,61 @@ export default function ConversationList({ onSelectConversation, selectedConvers
     return url;
   };
 
-  useEffect(() => {
-    const loadConversations = async () => {
-      try {
-        setLoading(true);
+  const loadConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Current user ID'yi al
+      const myProfile = await getMyProfile();
+      const currentUserId = myProfile?.id;
+      
+      const data = await getMyConversations();
+      setConversations(data);
+
+      // Her konuşma için diğer kullanıcının bilgilerini al
+      const userPromises = data.map(async (conv) => {
+        let otherUserId;
         
-        // Current user ID'yi al
-        const myProfile = await getMyProfile();
-        const currentUserId = myProfile?.id;
+        if (conv.userAId === currentUserId) {
+          otherUserId = conv.userBId;
+        } else if (conv.userBId === currentUserId) {
+          otherUserId = conv.userAId;
+        } else {
+          otherUserId = conv.userAId;
+        }
         
-        const data = await getMyConversations();
-        setConversations(data);
+        try {
+          const user = await getUserById(otherUserId);
+          return { conversationId: conv.id, user };
+        } catch (error) {
+          console.error('Error fetching user:', error);
+          return { conversationId: conv.id, user: null };
+        }
+      });
 
-        // Her konuşma için diğer kullanıcının bilgilerini al
-        const userPromises = data.map(async (conv) => {
-          // conv.userAId ve conv.userBId'yi currentUserId ile karşılaştır
-          // Hangisi currentUserId'ye eşit değilse, o user'ın datasını al
-          let otherUserId;
-          
-          if (conv.userAId === currentUserId) {
-            // userAId current user ise, userBId'yi al
-            otherUserId = conv.userBId;
-          } else if (conv.userBId === currentUserId) {
-            // userBId current user ise, userAId'yi al
-            otherUserId = conv.userAId;
-          } else {
-            // Hiçbiri eşleşmiyorsa (hata durumu), userAId'yi al
-            otherUserId = conv.userAId;
-          }
-          
-          try {
-            const user = await getUserById(otherUserId);
-            return { conversationId: conv.id, user };
-          } catch (error) {
-            console.error('Error fetching user:', error);
-            return { conversationId: conv.id, user: null };
-          }
-        });
-
-        const userResults = await Promise.all(userPromises);
-        const usersMap = {};
-        userResults.forEach(({ conversationId, user }) => {
-          usersMap[conversationId] = user;
-        });
-        setConversationUsers(usersMap);
-      } catch (error) {
-        console.error('Error loading conversations:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadConversations();
+      const userResults = await Promise.all(userPromises);
+      const usersMap = {};
+      userResults.forEach(({ conversationId, user }) => {
+        usersMap[conversationId] = user;
+      });
+      setConversationUsers(usersMap);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  // Refresh trigger'ı dinle
+  useEffect(() => {
+    if (refreshTrigger) {
+      loadConversations();
+    }
+  }, [refreshTrigger, loadConversations]);
 
   if (loading) {
     return (
