@@ -1,7 +1,8 @@
+/* Message Box Overlay - Floating position */
 .message-box-overlay {
   position: fixed;
   bottom: 20px;
-  right: 320px;
+  right: 20px;
   z-index: 1000;
   pointer-events: auto;
 }
@@ -16,6 +17,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .message-box-header {
@@ -46,7 +48,7 @@
   object-fit: cover;
 }
 
-.message-box-avatar-initials {
+.avatar-placeholder {
   width: 100%;
   height: 100%;
   background: #3b82f6;
@@ -58,23 +60,46 @@
   font-size: 0.75rem;
 }
 
-.message-box-name {
-  font-weight: 500;
-  color: #111827;
+.message-box-user-details h4 {
+  margin: 0;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
 }
 
-.message-box-close {
+.connection-status {
+  margin-top: 4px;
+}
+
+.status-indicator {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.status-indicator.connected {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.status-indicator.disconnected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.close-btn {
   background: none;
   border: none;
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 4px;
   color: #6b7280;
+  font-size: 1.25rem;
   transition: color 0.2s;
 }
 
-.message-box-close:hover {
+.close-btn:hover {
   color: #374151;
 }
 
@@ -83,12 +108,16 @@
   overflow-y: auto;
   padding: 1rem;
   background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .messages-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
+  padding-bottom: 1rem;
 }
 
 .message-item {
@@ -148,71 +177,85 @@
   text-align: left !important;
 }
 
-.message-box-input {
-  padding: 1rem;
+/* Input Container - Bottom'da sabit */
+.message-input-container {
   border-top: 1px solid #e5e7eb;
   background: white;
+  margin-top: auto;
 }
 
-.input-wrapper {
+.message-input-wrapper {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
 }
 
 .message-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .message-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #007bff;
 }
 
 .send-button {
-  background: #3b82f6;
-  color: white;
+  width: 40px;
+  height: 40px;
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem;
+  border-radius: 50%;
+  background: #007bff;
+  color: white;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
-  min-width: 40px;
-  height: 40px;
   flex-shrink: 0;
 }
 
 .send-button:hover:not(:disabled) {
-  background: #2563eb;
+  background: #0056b3;
 }
 
 .send-button:disabled {
-  background: #9ca3af;
+  background: #ccc;
   cursor: not-allowed;
 }
 
-.loading-state,
+.loading,
 .empty-state {
   text-align: center;
   color: #6b7280;
   font-size: 0.875rem;
   padding: 2rem 1rem;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
-  .message-box {
-    width: calc(100vw - 40px);
-    height: 400px;
-    bottom: 80px;
+  .message-box-overlay {
+    bottom: 20px;
     right: 20px;
+    left: 20px;
+  }
+  
+  .message-box {
+    width: 100%;
+    height: 400px;
   }
 }

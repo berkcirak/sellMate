@@ -7,6 +7,7 @@ import { getCommentsByUser } from '../services/api/comment';
 import { useParams, Link } from 'react-router-dom';
 import FollowModal from '../components/profile/FollowModal';
 import PostCard from '../components/posts/PostCard';
+import MessageBox from '../components/messages/MessageBox';
 import '../styles/pages/profile.css';
 
 export default function ProfilePage() {
@@ -27,6 +28,10 @@ export default function ProfilePage() {
   // Follow states
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+
+  // Message states - YENİ
+  const [isMessageBoxOpen, setIsMessageBoxOpen] = useState(false);
+  const [messageConversation, setMessageConversation] = useState(null);
 
   const getFullImageUrl = (url) => {
     if (!url) return '';
@@ -52,6 +57,27 @@ export default function ProfilePage() {
     }
     // Başka birinin profilindeyse sayıları değiştirme (sabit kalsın)
   }, [auth?.id, me?.id]);
+
+  // Mesaj gönderme fonksiyonu - YENİ
+  const handleSendMessage = () => {
+    if (!me?.id || !auth?.id) return;
+    
+    // Conversation oluştur (backend otomatik oluşturacak)
+    const conversation = {
+      id: `temp_${Date.now()}`, // Geçici ID, backend gerçek ID verecek
+      userAId: Math.min(auth.id, me.id),
+      userBId: Math.max(auth.id, me.id)
+    };
+    
+    setMessageConversation(conversation);
+    setIsMessageBoxOpen(true);
+  };
+
+  // MessageBox kapatma fonksiyonu - YENİ
+  const handleCloseMessageBox = () => {
+    setIsMessageBoxOpen(false);
+    setMessageConversation(null);
+  };
 
   const LikePostCard = ({ like }) => {
     const [post, setPost] = useState(null);
@@ -330,29 +356,53 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          {/* Modern Follow Button */}
+          {/* Buttons Container - YENİ */}
           {!isOwnProfile && (
-            <button
-              onClick={handleFollowToggle}
-              disabled={followLoading}
-              className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
-            >
-              {followLoading ? (
-                <>
-                  <div className="loading-spinner" style={{
-                    width: '12px',
-                    height: '12px',
-                    border: '2px solid currentColor',
-                    borderTop: '2px solid transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }}></div>
-                  Yükleniyor...
-                </>
-              ) : (
-                isFollowing ? 'Takip Ediliyor' : 'Takip Et'
-              )}
-            </button>
+            <div className="profile-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Follow Button */}
+              <button
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+                className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
+              >
+                {followLoading ? (
+                  <>
+                    <div className="loading-spinner" style={{
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid currentColor',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    Yükleniyor...
+                  </>
+                ) : (
+                  isFollowing ? 'Takip Ediliyor' : 'Takip Et'
+                )}
+              </button>
+              
+              {/* Message Button - YENİ */}
+              <button
+                onClick={handleSendMessage}
+                className="message-button"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+              >
+                💬 Mesaj At
+              </button>
+            </div>
           )}
         </div>
   
@@ -410,6 +460,14 @@ export default function ProfilePage() {
         type={modalType}
         currentUserId={auth?.id}
         onFollowChange={handleModalFollowChange}
+      />
+
+      {/* MessageBox - YENİ */}
+      <MessageBox
+        conversation={messageConversation}
+        otherUser={me}
+        isOpen={isMessageBoxOpen}
+        onClose={handleCloseMessageBox}
       />
     </div>
   );

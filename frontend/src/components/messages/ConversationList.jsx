@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getMyConversations } from '../../services/api/conversation';
-import { getUserById } from '../../services/api/user';
+import { getUserById, getMyProfile } from '../../services/api/user';
 import '../../styles/components/conversation-list.css';
 
 export default function ConversationList({ onSelectConversation, selectedConversationId }) {
@@ -20,14 +20,31 @@ export default function ConversationList({ onSelectConversation, selectedConvers
     const loadConversations = async () => {
       try {
         setLoading(true);
+        
+        // Current user ID'yi al
+        const myProfile = await getMyProfile();
+        const currentUserId = myProfile?.id;
+        
         const data = await getMyConversations();
         setConversations(data);
 
         // Her konuşma için diğer kullanıcının bilgilerini al
         const userPromises = data.map(async (conv) => {
-          const otherUserId = conv.userAId !== localStorage.getItem('currentUserId') 
-            ? conv.userAId 
-            : conv.userBId;
+          // conv.userAId ve conv.userBId'yi currentUserId ile karşılaştır
+          // Hangisi currentUserId'ye eşit değilse, o user'ın datasını al
+          let otherUserId;
+          
+          if (conv.userAId === currentUserId) {
+            // userAId current user ise, userBId'yi al
+            otherUserId = conv.userBId;
+          } else if (conv.userBId === currentUserId) {
+            // userBId current user ise, userAId'yi al
+            otherUserId = conv.userAId;
+          } else {
+            // Hiçbiri eşleşmiyorsa (hata durumu), userAId'yi al
+            otherUserId = conv.userAId;
+          }
+          
           try {
             const user = await getUserById(otherUserId);
             return { conversationId: conv.id, user };
