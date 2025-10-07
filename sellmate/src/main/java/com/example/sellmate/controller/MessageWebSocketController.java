@@ -12,13 +12,11 @@ import org.springframework.stereotype.Controller;
 public class MessageWebSocketController {
 
     private final MessageService messageService;
-    private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
 
-    public MessageWebSocketController(MessageService messageService, UserService userService, SimpMessagingTemplate messagingTemplate) {
+    public MessageWebSocketController(MessageService messageService, SimpMessagingTemplate messagingTemplate) {
         this.messageService = messageService;
-        this.userService = userService;
         this.messagingTemplate = messagingTemplate;
     }
     @MessageMapping("/message.send")
@@ -28,10 +26,5 @@ public class MessageWebSocketController {
         messagingTemplate.convertAndSend("/topic/conversation." + conversationId, messageResponse);
     }
 
-    @MessageMapping("/user.join")
-    public void userJoin(){
-        Long userId = userService.getCurrentUserId();
-        messagingTemplate.convertAndSend("/topic/user.online", userId);
-    }
-    
+
 }
