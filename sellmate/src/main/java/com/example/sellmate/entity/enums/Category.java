@@ -1,4 +1,4 @@
-package com.example.sellmate.entity;
+package com.example.sellmate.entity.enums;
 
 public enum Category {
     ELECTRONICS("Elektronik"),

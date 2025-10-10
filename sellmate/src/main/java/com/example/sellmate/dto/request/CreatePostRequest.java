@@ -1,6 +1,6 @@
 package com.example.sellmate.dto.request;
 
-import com.example.sellmate.entity.Category;
+import com.example.sellmate.entity.enums.Category;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
