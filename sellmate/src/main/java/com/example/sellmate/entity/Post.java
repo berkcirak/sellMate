@@ -1,6 +1,7 @@
 package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
+import com.example.sellmate.entity.enums.Category;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

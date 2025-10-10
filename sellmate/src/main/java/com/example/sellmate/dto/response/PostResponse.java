@@ -1,6 +1,6 @@
 package com.example.sellmate.dto.response;
 
-import com.example.sellmate.entity.Category;
+import com.example.sellmate.entity.enums.Category;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

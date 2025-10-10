@@ -1,6 +1,7 @@
 package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
+import com.example.sellmate.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.COMPLETED;
+
 
     public Long getBuyerId() {
         return buyerId;
@@ -61,7 +63,5 @@ public class Order extends BaseEntity {
         this.status = status;
     }
 
-    public enum OrderStatus{
-        COMPLETED, CANCELED
-    }
+
 }
