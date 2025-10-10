@@ -17,6 +17,40 @@ public class Wallet extends BaseEntity {
     private BigDecimal balance = BigDecimal.ZERO;
     @Column(nullable = false, length = 3)
     private String currency= "TRY";
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal reservedBalance = BigDecimal.ZERO;
+
+    public BigDecimal available(){
+        return balance.subtract(reservedBalance);
+    }
+    public void reserve(BigDecimal amount){
+        if (amount == null || amount.signum() <= 0){
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (available().compareTo(amount) < 0){
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+        reservedBalance = reservedBalance.add(amount);
+    }
+    public void release(BigDecimal amount){
+        if (amount == null || amount.signum() <= 0){
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (reservedBalance.compareTo(amount) < 0){
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+        reservedBalance = reservedBalance.subtract(amount);
+    }
+    public void capture(BigDecimal amount){
+        if (amount == null || amount.signum() <= 0){
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (reservedBalance.compareTo(amount) < 0){
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+        reservedBalance = reservedBalance.subtract(amount);
+        balance = balance.subtract(amount);
+    }
 
     public User getUser() {
         return user;
