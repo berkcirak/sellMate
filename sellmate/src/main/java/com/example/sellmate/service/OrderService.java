@@ -1,15 +1,19 @@
 package com.example.sellmate.service;
 
 import com.example.sellmate.dto.response.OrderResponse;
+import com.example.sellmate.entity.Offer;
 import com.example.sellmate.entity.Order;
 import com.example.sellmate.entity.Post;
 import com.example.sellmate.entity.Wallet;
+import com.example.sellmate.entity.enums.OfferStatus;
 import com.example.sellmate.entity.enums.OrderStatus;
+import com.example.sellmate.exception.offer.OfferNotFoundException;
 import com.example.sellmate.exception.order.OrderNotFoundException;
 import com.example.sellmate.exception.post.PostNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.exception.wallet.WalletNotFoundException;
 import com.example.sellmate.mapper.OrderMapper;
+import com.example.sellmate.repository.OfferRepository;
 import com.example.sellmate.repository.OrderRepository;
 import com.example.sellmate.repository.PostRepository;
 import com.example.sellmate.repository.WalletRepository;
@@ -28,12 +32,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final WalletRepository walletRepository;
-    public OrderService(UserService userService, PostRepository postRepository, OrderRepository orderRepository, OrderMapper orderMapper, WalletRepository walletRepository) {
+    private final OfferRepository offerRepository;
+    public OrderService(UserService userService, PostRepository postRepository, OrderRepository orderRepository, OrderMapper orderMapper, WalletRepository walletRepository, OfferRepository offerRepository) {
         this.userService = userService;
         this.postRepository = postRepository;
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.walletRepository = walletRepository;
+        this.offerRepository = offerRepository;
     }
 
     @Transactional
@@ -106,5 +112,32 @@ public class OrderService {
     }
 
 
-
+    @Transactional
+    public OrderResponse createOrderFromOffer(Long offerId) {
+        Offer offer = offerRepository.findById(offerId).orElseThrow(() -> new OfferNotFoundException(offerId));
+        Post post = postRepository.findByIdForUpdate(offer.getPostId()).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        Long sellerId = post.getUser().getId();
+        Long currentUserId = userService.getCurrentUserId();
+        if (!sellerId.equals(currentUserId)){
+            throw new UnauthorizedException("Only post owner can accept offer");
+        }
+        if (!Boolean.TRUE.equals(post.getAvailable())){
+            throw new IllegalStateException("Post not available");
+        }
+        if (offer.getStatus() != OfferStatus.PENDING){
+            throw new IllegalStateException("Offer not pending");
+        }
+        Order order = new Order();
+        order.setBuyerId(offer.getBuyerId());
+        order.setPrice(post.getPrice());
+        order.setSellerId(sellerId);
+        order.setPostId(offer.getPostId());
+        Wallet buyerWallet = walletRepository.findByUserIdForUpdate(offer.getBuyerId()).orElseThrow(() -> new WalletNotFoundException("Buyer wallet not found"));
+        buyerWallet.reserve(offer.getOfferedPrice());
+        order.setStatus(OrderStatus.RESERVED);
+        Order savedOrder = orderRepository.save(order);
+        offer.setStatus(OfferStatus.ACCEPTED);
+        offerRepository.save(offer);
+        return orderMapper.toResponse(savedOrder);
+    }
 }
