@@ -158,7 +158,7 @@ export default function MessageBox({ conversation, otherUser, isOpen, onClose })
               <h4>{otherUser?.firstName} {otherUser?.lastName}</h4>
               <div className="connection-status">
                 <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-                  {isConnected ? '🟢 Bağlı' : '🔴 Bağlantı yok'}
+                  {isConnected ? '🟢 Çevrimiçi' : '🔴 Çevrimdışı'}
                 </span>
               </div>
             </div>
