@@ -62,13 +62,15 @@ public class OrderService {
         buyer.reserve(post.getPrice());
         order.setStatus(OrderStatus.RESERVED);
         Order savedOrder = orderRepository.save(order);
+        post.setAvailable(false);
+        postRepository.save(post);
         return orderMapper.toResponse(savedOrder);
     }
 
     @Scheduled(fixedDelay = 60000)
     @Transactional
     public void moveReservedToDeliveryPending(){
-        LocalDateTime cutoff = LocalDateTime.now().minusDays(2);
+        LocalDateTime cutoff = LocalDateTime.now().plusMinutes(1);
         List<Order> list = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.RESERVED, cutoff);
         for (Order order: list){
             order.setStatus(OrderStatus.PENDING);
@@ -108,6 +110,10 @@ public class OrderService {
         buyer.release(order.getPrice());
         order.setStatus(OrderStatus.CANCELED);
         Order saved = orderRepository.save(order);
+
+        Post post = postRepository.findByIdForUpdate(order.getPostId()).orElseThrow(() -> new PostNotFoundException(order.getPostId()));
+        post.setAvailable(true);
+        postRepository.save(post);
         return orderMapper.toResponse(saved);
     }
 
@@ -129,7 +135,7 @@ public class OrderService {
         }
         Order order = new Order();
         order.setBuyerId(offer.getBuyerId());
-        order.setPrice(post.getPrice());
+        order.setPrice(offer.getOfferedPrice());
         order.setSellerId(sellerId);
         order.setPostId(offer.getPostId());
         Wallet buyerWallet = walletRepository.findByUserIdForUpdate(offer.getBuyerId()).orElseThrow(() -> new WalletNotFoundException("Buyer wallet not found"));
@@ -138,6 +144,8 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         offer.setStatus(OfferStatus.ACCEPTED);
         offerRepository.save(offer);
+        post.setAvailable(false);
+        postRepository.save(post);
         return orderMapper.toResponse(savedOrder);
     }
 }
