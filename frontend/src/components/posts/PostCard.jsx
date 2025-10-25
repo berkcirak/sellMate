@@ -5,7 +5,7 @@ import { likePost, unlikePost, getPostLikeCount, getMyLikes } from '../../servic
 import { createComment, getCommentsByPost } from '../../services/api/comment';
 import { createOrder } from '../../services/api/order';
 import { createOffer } from '../../services/api/offer';
-
+import { getMyProfile } from '../../services/api/user';
 let MY_LIKES_CACHE; // { loaded: boolean, postIds: Set<number> }
 
 export default function PostCard({ post, commentsExpanded = false }) {
@@ -42,12 +42,22 @@ export default function PostCard({ post, commentsExpanded = false }) {
 
   // Mevcut kullanıcıyı al
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Token varsa kullanıcı giriş yapmış
-      setCurrentUser({ id: 1 }); // Gerçek implementasyonda API'den al
-    }
-  }, []);
+    const loadCurrentUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await getMyProfile();
+          if (userData?.id) {
+            setCurrentUser({ id: userData.id });
+          }
+        } catch (error) {
+          console.error('Error loading current user:', error);
+        }
+      }
+    };
+
+    loadCurrentUser();
+  }, [post.user?.id]);
 
   useEffect(() => {
     let mounted = true;

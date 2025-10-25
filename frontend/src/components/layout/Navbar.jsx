@@ -1,11 +1,16 @@
 // frontend/src/components/layout/Navbar.jsx
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getMyProfile } from '../../services/api/user';
+import { getMyWallet } from '../../services/api/wallet';
 import '../../styles/components/layout.css';
 import '../../styles/components/navbar.css';
 
 export default function Navbar() {
   const [q, setQ] = useState('');
+  const [user, setUser] = useState(null);
+  const [wallet, setWallet] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,6 +18,26 @@ export default function Navbar() {
     const sp = new URLSearchParams(location.search);
     setQ(sp.get('q') || '');
   }, [location.search]);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const [userData, walletData] = await Promise.all([
+        getMyProfile(),
+        getMyWallet()
+      ]);
+      setUser(userData);
+      setWallet(walletData);
+    } catch (error) {
+      console.error('Kullanıcı verileri yüklenemedi:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const submit = useCallback(() => {
     const query = q.trim();
@@ -22,6 +47,19 @@ export default function Navbar() {
 
   const onKey = (e) => {
     if (e.key === 'Enter') submit();
+  };
+
+  const handleProfileClick = () => {
+    if (user?.id) {
+      navigate(`/profile/${user.id}`);
+    }
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('tr-TR', { 
+      style: 'currency', 
+      currency: wallet?.currency || 'TRY' 
+    }).format(price);
   };
 
   return (
@@ -42,7 +80,26 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-      <div className="navbar-right"></div>
+      
+      <div className="navbar-right">
+        {!loading && (
+          <>
+            {/* Bakiye */}
+            <div className="wallet-balance">
+              <span className="balance-amount">
+                {formatPrice(wallet?.balance || 0)}
+              </span>
+            </div>
+            
+            {/* Kullanıcı Adı */}
+            <div className="user-profile" onClick={handleProfileClick}>
+              <span className="user-name">
+                {user?.firstName} {user?.lastName}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

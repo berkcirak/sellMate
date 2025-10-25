@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: whitesmoke;
 }
 
 .layout-main {
@@ -43,7 +43,7 @@
   width: 300px;
   height: 100vh;
   z-index: 100;
-  background: white; /* Arka plan ekleyelim */
+  background: whitesmoke;
   border-left: 1px solid #e5e7eb; /* Sol kenarda çizgi */
 }
 

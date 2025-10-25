@@ -17,6 +17,7 @@
 .sidebar-header {
   padding: 1.5rem 1rem;
   border-bottom: 1px solid #e2e8f0;
+  background: whitesmoke;
 }
 
 .sidebar-logo {
@@ -37,6 +38,7 @@
 
 .sidebar-nav {
   flex: 1;
+  background: whitesmoke;
   padding: 1rem 0;
 }
 
@@ -104,6 +106,7 @@
 
 .sidebar-footer {
   padding: 1rem;
+  background: whitesmoke;
   border-top: 1px solid #e2e8f0;
 }
 
