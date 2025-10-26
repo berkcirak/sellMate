@@ -27,3 +27,14 @@ export const getFollowing = async (userId) =>
 
 export const searchUsers = async (q) =>
   apiClient.get(`/user/search`, { params: { q } }).then(r => r.data?.data);
+
+export const updateProfile = async (formData) => {
+  // Önce kendi profil bilgilerini al
+  const myProfile = await getMyProfile();
+  const res = await apiClient.put(`/user/${myProfile.id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return res.data?.data;
+};

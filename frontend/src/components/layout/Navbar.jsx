@@ -55,6 +55,10 @@ export default function Navbar() {
     }
   };
 
+  const handleWalletClick = () => {
+    navigate('/wallet');
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('tr-TR', { 
       style: 'currency', 
@@ -84,8 +88,8 @@ export default function Navbar() {
       <div className="navbar-right">
         {!loading && (
           <>
-            {/* Bakiye */}
-            <div className="wallet-balance">
+            {/* Bakiye - tıklanabilir */}
+            <div className="wallet-balance" onClick={handleWalletClick} style={{ cursor: 'pointer' }}>
               <span className="balance-amount">
                 {formatPrice(wallet?.balance || 0)}
               </span>
