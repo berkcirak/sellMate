@@ -1,6 +1,6 @@
 // frontend/src/pages/ProfilePage.jsx
 import { useEffect, useState, useCallback } from 'react';
-import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing } from '../services/api/user';
+import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing, updateProfile } from '../services/api/user';
 import { getPostsByUser, getPostByCommentId, getPost } from '../services/api/posts';
 import { getUserLikes } from '../services/api/like';
 import { getCommentsByUser } from '../services/api/comment';
@@ -33,12 +33,97 @@ export default function ProfilePage() {
   const [isMessageBoxOpen, setIsMessageBoxOpen] = useState(false);
   const [messageConversation, setMessageConversation] = useState(null);
 
+  // Edit profile states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    profileImage: null
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  
+  // Edit profile states
   const getFullImageUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('/uploads/')) {
       return `http://localhost:8080${url}`;
     }
     return url;
+  };
+  const handleEditProfile = () => {
+    setEditForm({
+      firstName: me?.firstName || '',
+      lastName: me?.lastName || '',
+      email: me?.email || '',
+      password: '********', // Masked password
+      profileImage: null
+    });
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      profileImage: null
+    });
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setEditLoading(true);
+      
+      const formData = new FormData();
+      
+      // Sadece değişen alanları gönder
+      if (editForm.firstName !== me?.firstName) {
+        formData.append('firstName', editForm.firstName);
+      }
+      if (editForm.lastName !== me?.lastName) {
+        formData.append('lastName', editForm.lastName);
+      }
+      if (editForm.email !== me?.email) {
+        formData.append('email', editForm.email);
+      }
+      if (editForm.password !== '********' && editForm.password.trim() !== '') {
+        formData.append('password', editForm.password);
+      }
+      if (editForm.profileImage) {
+        formData.append('profileImage', editForm.profileImage);
+      }
+
+      const updatedUser = await updateProfile(formData);
+      setMe(updatedUser);
+      setIsEditing(false);
+      alert('Profil başarıyla güncellendi!');
+    } catch (error) {
+      console.error('Profile update error:', error);
+      alert('Profil güncellenirken bir hata oluştu: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditForm(prev => ({ ...prev, profileImage: file }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    // Eğer kullanıcı masked password'u silerse, boş string yap
+    if (value === '********') {
+      setEditForm(prev => ({ ...prev, password: '' }));
+    } else {
+      setEditForm(prev => ({ ...prev, password: value }));
+    }
   };
 
   // Modal'dan gelen takip durumu değişikliklerini handle et
@@ -340,73 +425,263 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      <div className="profile-card">
-        <div className="profile-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div className="profile-avatar">
-              {me.profileImage ? (
-                <img src={getFullImageUrl(me.profileImage)} alt="" />
-              ) : (
-                <div className="profile-initials">
-                  {(me.firstName?.[0] || '').toUpperCase()}{(me.lastName?.[0] || '').toUpperCase()}
-                </div>
-              )}
-            </div>
-            <div className="profile-title">
-              <h1 className="profile-name">{me.firstName} {me.lastName}</h1>
-              <div className="profile-email">{me.email}</div>
-            </div>
+    <div className="profile-card">
+      <div className="profile-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="profile-avatar">
+            {me.profileImage ? (
+              <img src={getFullImageUrl(me.profileImage)} alt="" />
+            ) : (
+              <div className="profile-initials">
+                {(me.firstName?.[0] || '').toUpperCase()}{(me.lastName?.[0] || '').toUpperCase()}
+              </div>
+            )}
           </div>
-          
-          {/* Buttons Container - YENİ */}
-          {!isOwnProfile && (
-            <div className="profile-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {/* Follow Button */}
-              <button
-                onClick={handleFollowToggle}
-                disabled={followLoading}
-                className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
-              >
-                {followLoading ? (
-                  <>
-                    <div className="loading-spinner" style={{
-                      width: '12px',
-                      height: '12px',
-                      border: '2px solid currentColor',
-                      borderTop: '2px solid transparent',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                    Yükleniyor...
-                  </>
-                ) : (
-                  isFollowing ? 'Takip Ediliyor' : 'Takip Et'
-                )}
-              </button>
-              
-              {/* Message Button - YENİ */}
-              <button
-                onClick={handleSendMessage}
-                className="message-button"
-              >
-          
-                <span>Mesaj At</span>
-              </button>
-            </div>
-          )}
+          <div className="profile-title">
+            <h1 className="profile-name">{me.firstName} {me.lastName}</h1>
+            <div className="profile-email">{me.email}</div>
+          </div>
         </div>
-  
-        {/* Follow Stats */}
-        <div className="profile-stats">
-          <button className="stat-item" onClick={() => openModal('followers')}>
-            <span className="stat-number">{me.followersCount || 0}</span>
-            <span className="stat-label">Takipçiler</span>
+        
+        {/* Buttons Container - YENİ */}
+        {!isOwnProfile && (
+          <div className="profile-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Follow Button */}
+            <button
+              onClick={handleFollowToggle}
+              disabled={followLoading}
+              className={`follow-button ${isFollowing ? 'following' : 'not-following'}`}
+            >
+              {followLoading ? (
+                <>
+                  <div className="loading-spinner" style={{
+                    width: '12px',
+                    height: '12px',
+                    border: '2px solid currentColor',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  Yükleniyor...
+                </>
+              ) : (
+                isFollowing ? 'Takip Ediliyor' : 'Takip Et'
+              )}
+            </button>
+            
+            {/* Message Button - YENİ */}
+            <button
+              onClick={handleSendMessage}
+              className="message-button"
+            >
+              <span>Mesaj At</span>
+            </button>
+          </div>
+        )}
+
+        {/* Edit Profile Button - sadece kendi profilinde */}
+        {isOwnProfile && (
+          <div className="profile-buttons">
+            <button
+              onClick={handleEditProfile}
+              className="edit-profile-button"
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '2rem',
+                border: 'none',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: 'rgba(245, 158, 11, 0.8)',
+                color: 'white',
+                boxShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.3)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              Profili Düzenle
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Edit Profile Form */}
+      {/* Modal Overlay */}
+{isEditing && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(5px)',
+    zIndex: 1000,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px'
+  }}>
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      padding: '2rem',
+      maxWidth: '500px',
+      width: '100%',
+      maxHeight: '90vh',
+      overflowY: 'auto',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', color: '#333', fontSize: '1.5rem' }}>Profili Düzenle</h3>
+      
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {/* Form alanları buraya */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Ad
+          </label>
+          <input
+            type="text"
+            value={editForm.firstName}
+            onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Soyad
+          </label>
+          <input
+            type="text"
+            value={editForm.lastName}
+            onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            E-posta
+          </label>
+          <input
+            type="email"
+            value={editForm.email}
+            onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Şifre
+          </label>
+          <input
+            type="password"
+            value={editForm.password}
+            onChange={handlePasswordChange}
+            placeholder="Yeni şifre girin (değiştirmek istemiyorsanız boş bırakın)"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+          <small style={{ color: '#666', fontSize: '12px' }}>
+            Şifre değiştirmek istemiyorsanız bu alanı boş bırakın
+          </small>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Profil Fotoğrafı
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+          <small style={{ color: '#666', fontSize: '12px' }}>
+            Profil fotoğrafı değiştirmek istemiyorsanız bu alanı boş bırakın
+          </small>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+          <button
+            onClick={handleCancelEdit}
+            disabled={editLoading}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '4px',
+              border: '1px solid #ddd',
+              background: '#fff',
+              color: '#333',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            İptal
           </button>
-          <button className="stat-item" onClick={() => openModal('following')}>
-            <span className="stat-number">{me.followingCount || 0}</span>
-            <span className="stat-label">Takip Edilenler</span>
+          <button
+            onClick={handleSaveProfile}
+            disabled={editLoading}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '4px',
+              border: 'none',
+              background: 'rgba(245, 158, 11, 0.8)',
+              color: 'white',
+              cursor: editLoading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            {editLoading ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+)}
+
+      {/* Follow Stats */}
+      <div className="profile-stats">
+        <button className="stat-item" onClick={() => openModal('followers')}>
+          <span className="stat-number">{me.followersCount || 0}</span>
+          <span className="stat-label">Takipçiler</span>
+        </button>
+        <button className="stat-item" onClick={() => openModal('following')}>
+          <span className="stat-number">{me.followingCount || 0}</span>
+          <span className="stat-label">Takip Edilenler</span>
+        </button>
+      </div>
   
         {/* Modern Tabs */}
         <div className="profile-tabs">
