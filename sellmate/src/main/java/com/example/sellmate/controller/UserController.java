@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -79,6 +80,11 @@ public class UserController {
     public ApiResponse<List<UserResponse>> searchUsers(@RequestParam("q") String q, HttpServletRequest httpServletRequest){
         List<UserResponse> userResponses = userService.searchUsers(q);
         return ApiResponse.success(userResponses, "Users retrieved successfully", httpServletRequest.getRequestURI());
+    }
+    @PostMapping("/verify-password")
+    public ApiResponse<Boolean> verifyPassword(@RequestBody Map<String, String> request, HttpServletRequest httpServletRequest){
+        boolean isValid = userService.verifyPassword(request.get("password"));
+        return ApiResponse.success(isValid, "Password verification completed", httpServletRequest.getRequestURI());
     }
 
 }
