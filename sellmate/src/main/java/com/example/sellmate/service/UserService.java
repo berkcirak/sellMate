@@ -158,4 +158,8 @@ public class UserService {
         return users.stream().map(userMapper::toResponse).toList();
     }
 
+    public boolean verifyPassword(String password) {
+        User currentUser = getCurrentUser();
+        return passwordEncoder.matches(password, currentUser.getPassword());
+    }
 }
