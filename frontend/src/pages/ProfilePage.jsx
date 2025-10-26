@@ -1,6 +1,6 @@
 // frontend/src/pages/ProfilePage.jsx
 import { useEffect, useState, useCallback } from 'react';
-import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing, updateProfile } from '../services/api/user';
+import { getMyProfile, getUserById, followUser, unfollowUser, getFollowing, updateProfile, verifyPassword, deleteProfile } from '../services/api/user';
 import { getPostsByUser, getPostByCommentId, getPost } from '../services/api/posts';
 import { getUserLikes } from '../services/api/like';
 import { getCommentsByUser } from '../services/api/comment';
@@ -44,6 +44,10 @@ export default function ProfilePage() {
   });
   const [editLoading, setEditLoading] = useState(false);
   
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   // Edit profile states
   const getFullImageUrl = (url) => {
     if (!url) return '';
@@ -108,7 +112,34 @@ export default function ProfilePage() {
       setEditLoading(false);
     }
   };
-
+  const handleDeleteProfile = () => {
+    setShowDeleteModal(true);
+    setDeletePassword('');
+  };
+  const handleConfirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      
+      // Önce password'ü doğrula
+      const isValid = await verifyPassword(deletePassword);
+      if (!isValid) {
+        alert('Şifre yanlış!');
+        return;
+      }
+      
+      // Password doğruysa profili sil
+      await deleteProfile();
+      alert('Profil başarıyla silindi!');
+      // Logout işlemi yapılabilir
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Delete profile error:', error);
+      alert('Profil silinirken bir hata oluştu: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -501,27 +532,46 @@ export default function ProfilePage() {
             >
               Profili Düzenle
             </button>
+
+            <button
+              onClick={handleDeleteProfile}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '2rem',
+                border: 'none',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: 'rgba(239, 68, 68, 0.8)',
+                color: 'white',
+                boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.3)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              Profili Sil
+            </button>
           </div>
         )}
       </div>
 
       {/* Edit Profile Form */}
       {/* Modal Overlay */}
-{isEditing && (
-  <div style={{
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    backdropFilter: 'blur(5px)',
-    zIndex: 1000,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px'
-  }}>
+      {isEditing && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
     <div style={{
       backgroundColor: 'white',
       borderRadius: '12px',
@@ -666,6 +716,92 @@ export default function ProfilePage() {
             {editLoading ? 'Kaydediliyor...' : 'Kaydet'}
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+)}
+{showDeleteModal && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(5px)',
+    zIndex: 1000,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px'
+  }}>
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      padding: '2rem',
+      maxWidth: '400px',
+      width: '100%',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', color: '#333', fontSize: '1.5rem' }}>
+        Profili Sil
+      </h3>
+      
+      <p style={{ color: '#666', marginBottom: '1rem' }}>
+        Bu işlem geri alınamaz! Profilinizi silmek için şifrenizi girin.
+      </p>
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          Şifre
+        </label>
+        <input
+          type="password"
+          value={deletePassword}
+          onChange={(e) => setDeletePassword(e.target.value)}
+          placeholder="Şifrenizi girin"
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            fontSize: '14px'
+          }}
+        />
+      </div>
+      
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+        <button
+          onClick={() => setShowDeleteModal(false)}
+          disabled={deleteLoading}
+          style={{
+            padding: '0.75rem 1.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            background: '#fff',
+            color: '#333',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          İptal
+        </button>
+        <button
+          onClick={handleConfirmDelete}
+          disabled={deleteLoading || !deletePassword.trim()}
+          style={{
+            padding: '0.75rem 1.5rem',
+            borderRadius: '4px',
+            border: 'none',
+            background: 'rgba(239, 68, 68, 0.8)',
+            color: 'white',
+            cursor: deleteLoading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          {deleteLoading ? 'Siliniyor...' : 'Profili Sil'}
+        </button>
       </div>
     </div>
   </div>

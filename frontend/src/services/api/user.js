@@ -38,3 +38,14 @@ export const updateProfile = async (formData) => {
   });
   return res.data?.data;
 };
+export const verifyPassword = async (password) => {
+  const res = await apiClient.post('/user/verify-password', { password });
+  return res.data?.data;
+};
+
+export const deleteProfile = async () => {
+  // Önce kendi profil bilgilerini al
+  const myProfile = await getMyProfile();
+  const res = await apiClient.delete(`/user/${myProfile.id}`);
+  return res.data;
+};
