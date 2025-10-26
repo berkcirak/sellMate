@@ -20,7 +20,7 @@ public class Post extends BaseEntity {
     private BigDecimal price;
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable = true;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @ElementCollection
