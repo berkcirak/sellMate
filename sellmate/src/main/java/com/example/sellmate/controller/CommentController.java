@@ -35,7 +35,7 @@ public class CommentController {
         return ApiResponse.success(commentResponseList, "Comments retrieved successfully");
     }
     @PutMapping("/{commentId}")
-    public ApiResponse<CommentResponse> updateComment(@PathVariable Long commentId, UpdateCommentRequest request, HttpServletRequest httpRequest){
+    public ApiResponse<CommentResponse> updateComment(@PathVariable Long commentId, @RequestBody UpdateCommentRequest request, HttpServletRequest httpRequest){
         CommentResponse commentResponse = commentService.updateComment(commentId, request);
         return ApiResponse.success(commentResponse, "Comment updated successfully", httpRequest.getRequestURI());
     }
