@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { likePost, unlikePost, getPostLikeCount, getMyLikes } from '../../services/api/like';
-import { createComment, getCommentsByPost } from '../../services/api/comment';
+import { createComment, getCommentsByPost, updateComment, deleteCommentById } from '../../services/api/comment';
 import { createOrder } from '../../services/api/order';
 import { createOffer } from '../../services/api/offer';
 import { getMyProfile } from '../../services/api/user';
@@ -24,6 +24,10 @@ export default function PostCard({ post, commentsExpanded = false, onPostChanged
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentCount, setCommentCount] = useState(0);
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState('');
+  const [commentActionLoading, setCommentActionLoading] = useState(false);
 
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
@@ -270,6 +274,49 @@ export default function PostCard({ post, commentsExpanded = false, onPostChanged
     };
     return categories[category] || category;
   };
+  const handleDeleteComment = async (commentId) => {
+    if (!currentUser) return;
+    if (!window.confirm('Yorumu silmek istiyor musunuz?')) return;
+    try {
+      setCommentActionLoading(true);
+      await deleteCommentById(commentId);
+      setComments(prev => prev.filter(x => x.id !== commentId));
+      setCommentCount(c => Math.max(0, c - 1));
+    } catch (e) {
+      alert('Yorum silinemedi: ' + (e.response?.data?.message || e.message));
+    } finally {
+      setCommentActionLoading(false);
+      setMenuOpenId(null);
+    }
+  };
+  
+  const startEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditCommentText(comment.content || '');
+    setMenuOpenId(null);
+  };
+  
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditCommentText('');
+  };
+  
+  const saveEditComment = async (e) => {
+    e.preventDefault();
+    if (!editingCommentId || !editCommentText.trim()) return;
+    try {
+      setCommentActionLoading(true);
+      const updated = await updateComment(editingCommentId, editCommentText.trim());
+      setComments(prev =>
+        prev.map(c => (c.id === editingCommentId ? { ...c, content: updated?.content ?? editCommentText.trim() } : c))
+      );
+      cancelEditComment();
+    } catch (e) {
+      alert('Yorum güncellenemedi: ' + (e.response?.data?.message || e.message));
+    } finally {
+      setCommentActionLoading(false);
+    }
+  };
 
   return (
     <article className="post-card">
@@ -495,24 +542,93 @@ export default function PostCard({ post, commentsExpanded = false, onPostChanged
                   const cu = c.user || {};
                   const cDate = c.createdAt ? new Date(c.createdAt) : null;
                   return (
-                    <div key={c.id} className="comment-item">
+                    <div key={c.id} className="comment-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
                       <div className="comment-avatar">
                         {cu.profileImage ? (
                           <img src={getFullImageUrl(cu.profileImage)} alt="" />
                         ) : (
-                          <div>
-                            {cu.firstName?.[0]}{cu.lastName?.[0]}
-                          </div>
+                          <div>{cu.firstName?.[0]}{cu.lastName?.[0]}</div>
                         )}
                       </div>
-                      <div className="comment-body">
-                        <div className="comment-meta">
+
+                      <div className="comment-body" style={{ flex: 1, minWidth: 0 }}>
+                        <div className="comment-meta" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <strong>{cu.firstName} {cu.lastName}</strong>
                           {cDate ? <span>• {formatDate(cDate)}</span> : null}
+                          
+                          {/* Sağ üst köşe – sadece yorumu yazan kişiye göster */}
+                          {currentUser?.id === cu.id && (
+                            <div style={{ marginLeft: 'auto', position: 'relative' }}>
+                              <button
+                                type="button"
+                                onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
+                                aria-label="Yorum menüsü"
+                                style={{
+                                  border: 'none', background: 'transparent', cursor: 'pointer',
+                                  width: 28, height: 28, borderRadius: 14, display: 'grid', placeItems: 'center'
+                                }}
+                              >
+                                ⋯
+                              </button>
+                              {menuOpenId === c.id && (
+                                <div
+                                  style={{
+                                    position: 'absolute', right: 0, top: 28, background: '#fff',
+                                    border: '1px solid #e5e7eb', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                                    zIndex: 5, minWidth: 140, overflow: 'hidden'
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditComment(c)}
+                                    style={{ display: 'block', width: '100%', padding: '8px 12px', border: 0, background: 'white', cursor: 'pointer', textAlign: 'left' }}
+                                  >
+                                    Düzenle
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteComment(c.id)}
+                                    disabled={commentActionLoading}
+                                    style={{ display: 'block', width: '100%', padding: '8px 12px', border: 0, background: 'white', cursor: 'pointer', textAlign: 'left', color: '#dc2626' }}
+                                  >
+                                    {commentActionLoading ? 'Siliniyor…' : 'Sil'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <div className="comment-content">
-                          {c.content}
-                        </div>
+
+                        {/* İçerik veya inline edit formu */}
+                        {editingCommentId === c.id ? (
+                          <form onSubmit={saveEditComment} style={{ display: 'grid', gap: '8px' }}>
+                            <textarea
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              rows={3}
+                              style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, fontSize: 14 }}
+                              autoFocus
+                            />
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                              <button
+                                type="button"
+                                onClick={cancelEditComment}
+                                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}
+                              >
+                                İptal
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={commentActionLoading || !editCommentText.trim()}
+                                style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: '#f59e0b', color: '#fff', cursor: 'pointer' }}
+                              >
+                                {commentActionLoading ? 'Kaydediliyor…' : 'Kaydet'}
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="comment-content">{c.content}</div>
+                        )}
                       </div>
                     </div>
                   );

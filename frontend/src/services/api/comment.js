@@ -13,3 +13,13 @@ export const getCommentsByUser = async (userId) => {
  const res = await apiClient.get(`/comment/user/${userId}`);
  return res.data?.data ?? [];
 }
+
+export const updateComment = async (commentId, content) => {
+  const res = await apiClient.put(`/comment/${commentId}`, { content });
+  return res.data?.data;
+};
+
+export const deleteCommentById = async (commentId) => {
+  const res = await apiClient.delete(`/comment/${commentId}`);
+  return res.data;
+};
