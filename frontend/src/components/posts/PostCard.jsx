@@ -6,13 +6,16 @@ import { createComment, getCommentsByPost } from '../../services/api/comment';
 import { createOrder } from '../../services/api/order';
 import { createOffer } from '../../services/api/offer';
 import { getMyProfile } from '../../services/api/user';
+import { updatePost, deletePost } from '../../services/api/posts';
+
 let MY_LIKES_CACHE; // { loaded: boolean, postIds: Set<number> }
 
-export default function PostCard({ post, commentsExpanded = false }) {
+export default function PostCard({ post, commentsExpanded = false, onPostChanged }) {
   const user = post.user || {};
   const images = post.imageUrls || [];
   const createdAt = new Date(post.createdAt);
   const navigate = useNavigate();
+
   const [likeCount, setLikeCount] = useState(typeof post.likeCount === 'number' ? post.likeCount : 0);
   const [liked, setLiked] = useState(false);
 
@@ -22,11 +25,17 @@ export default function PostCard({ post, commentsExpanded = false }) {
   const [commentText, setCommentText] = useState('');
   const [commentCount, setCommentCount] = useState(0);
 
-  // Yeni state'ler
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title || '');
+  const [editDescription, setEditDescription] = useState(post.description || '');
+  const [editPrice, setEditPrice] = useState(post.price || 0);
+  const [editSaving, setEditSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const getFullImageUrl = (url) => {
     if (!url) return '';
@@ -40,22 +49,18 @@ export default function PostCard({ post, commentsExpanded = false }) {
     navigate(`/post/${post.id}`);
   };
 
-  // Mevcut kullanıcıyı al
   useEffect(() => {
     const loadCurrentUser = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
           const userData = await getMyProfile();
-          if (userData?.id) {
-            setCurrentUser({ id: userData.id });
-          }
-        } catch (error) {
-          console.error('Error loading current user:', error);
+          if (userData?.id) setCurrentUser({ id: userData.id });
+        } catch {
+          //
         }
       }
     };
-
     loadCurrentUser();
   }, [post.user?.id]);
 
@@ -65,10 +70,9 @@ export default function PostCard({ post, commentsExpanded = false }) {
       try {
         const count = await getPostLikeCount(post.id);
         if (mounted) setLikeCount(count ?? 0);
-      } catch {
-        //
-      }
-      // Load my likes once and cache
+      } catch (e) {
+        console.error('likeCount load error', e);}
+
       try {
         if (!MY_LIKES_CACHE || !MY_LIKES_CACHE.loaded) {
           const myLikes = await getMyLikes();
@@ -80,23 +84,22 @@ export default function PostCard({ post, commentsExpanded = false }) {
         if (mounted && MY_LIKES_CACHE?.postIds?.has(post.id)) {
           setLiked(true);
         }
-      } catch {
-        //
-      }
-      // Preload comments to get accurate count
+      }  catch (e) {
+        console.error('myLikes load error', e);}
+
       try {
         const list = await getCommentsByPost(post.id);
         if (mounted) {
           setCommentCount(Array.isArray(list) ? list.length : 0);
-          // don't open list yet; keep comments cached for quick open
           setComments(Array.isArray(list) ? list : []);
         }
-      } catch {
-        //
-      }
+      }catch (e) {
+        console.error('comments load error', e);}
     })();
     return () => { mounted = false; };
   }, [post.id]);
+
+  const isOwner = !!(currentUser && currentUser.id === post.user?.id);
 
   const onToggleLike = async () => {
     try {
@@ -111,9 +114,8 @@ export default function PostCard({ post, commentsExpanded = false }) {
         setLikeCount((c) => c + 1);
         if (MY_LIKES_CACHE?.postIds) MY_LIKES_CACHE.postIds.add(post.id);
       }
-    } catch {
-      //
-    }
+    } catch (e) {
+      console.error('toggle like error', e);}
   };
 
   const loadComments = async () => {
@@ -148,18 +150,15 @@ export default function PostCard({ post, commentsExpanded = false }) {
         await loadComments();
       }
       setCommentText('');
-    } catch {
-      //
-    }
+    } catch (e) {
+      console.error('submit comment error', e);}
   };
 
-  // Yeni fonksiyonlar
   const handleBuyNow = async () => {
     if (!currentUser) {
       navigate('/login');
       return;
     }
-    
     try {
       setIsLoading(true);
       await createOrder(post.id);
@@ -190,7 +189,6 @@ export default function PostCard({ post, commentsExpanded = false }) {
       alert('Geçerli bir fiyat girin');
       return;
     }
-
     try {
       setIsLoading(true);
       await createOffer(post.id, parseFloat(offerPrice));
@@ -201,6 +199,49 @@ export default function PostCard({ post, commentsExpanded = false }) {
       alert('Teklif gönderilemedi: ' + (error.response?.data?.message || error.message));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleOpenEdit = () => {
+    setEditTitle(post.title || '');
+    setEditDescription(post.description || '');
+    setEditPrice(post.price || 0);
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!isOwner) return;
+    try {
+      setEditSaving(true);
+      const payload = {
+        title: editTitle,
+        description: editDescription,
+        price: editPrice
+      };
+      const updated = await updatePost(post.id, payload);
+      setEditOpen(false);
+      if (onPostChanged) onPostChanged({ type: 'updated', post: updated });
+      alert('Gönderi güncellendi');
+    } catch (e) {
+      alert('Güncelleme başarısız: ' + (e.response?.data?.message || e.message));
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!isOwner) return;
+    if (!window.confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) return;
+    try {
+      setDeleting(true);
+      await deletePost(post.id);
+      if (onPostChanged) onPostChanged({ type: 'deleted', id: post.id });
+      alert('Gönderi silindi');
+    } catch (e) {
+      alert('Silme başarısız: ' + (e.response?.data?.message || e.message));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -288,17 +329,52 @@ export default function PostCard({ post, commentsExpanded = false }) {
         </div>
       ) : null}
 
-      {/* Satın alma butonları - sadece giriş yapmış, kendi post'u olmayan ve post müsait olan kullanıcılar için */}
-      {currentUser && 
-       currentUser.id !== post.user?.id && 
-       post.isAvailable && (
-        <div className="post-purchase-actions" style={{ 
-          padding: '12px 16px', 
+      {isOwner && (
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #e1e5e9', display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleOpenEdit}
+            style={{
+              flex: 1,
+              padding: '8px 16px',
+              backgroundColor: '#f59e0b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Düzenle
+          </button>
+          <button
+            onClick={handleDeletePost}
+            disabled={deleting}
+            style={{
+              flex: 1,
+              padding: '8px 16px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: deleting ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            {deleting ? 'Siliniyor...' : 'Sil'}
+          </button>
+        </div>
+      )}
+
+      {!isOwner && currentUser && post.isAvailable && (
+        <div className="post-purchase-actions" style={{
+          padding: '12px 16px',
           borderTop: '1px solid #e1e5e9',
           display: 'flex',
           gap: '8px'
         }}>
-          <button 
+          <button
             onClick={handleBuyNow}
             disabled={isLoading}
             style={{
@@ -315,8 +391,8 @@ export default function PostCard({ post, commentsExpanded = false }) {
           >
             {isLoading ? 'İşleniyor...' : 'Hemen Al'}
           </button>
-          
-          <button 
+
+          <button
             onClick={handleMakeOffer}
             disabled={isLoading}
             style={{
@@ -336,10 +412,7 @@ export default function PostCard({ post, commentsExpanded = false }) {
         </div>
       )}
 
-      {/* Post satılamaz durumda ise bilgi göster */}
-      {currentUser && 
-       currentUser.id !== post.user?.id && 
-       !post.isAvailable && (
+      {!isOwner && currentUser && !post.isAvailable && (
         <div style={{
           padding: '12px 16px',
           backgroundColor: '#f0f8ff',
@@ -389,9 +462,9 @@ export default function PostCard({ post, commentsExpanded = false }) {
                   e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                 }}
               />
-              <button 
-                type="submit" 
-                className="comment-submit" 
+              <button
+                type="submit"
+                className="comment-submit"
                 disabled={commentLoading || !commentText.trim()}
               >
                 {commentLoading ? (
@@ -450,7 +523,6 @@ export default function PostCard({ post, commentsExpanded = false }) {
         ) : null}
       </footer>
 
-      {/* Teklif Modal */}
       {showOfferModal && (
         <div style={{
           position: 'fixed',
@@ -477,7 +549,7 @@ export default function PostCard({ post, commentsExpanded = false }) {
             <p style={{ margin: '0 0 16px 0', color: '#666' }}>
               Liste fiyatı: {formatPrice(post.price)}
             </p>
-            
+
             <form onSubmit={handleSubmitOffer}>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
@@ -500,7 +572,7 @@ export default function PostCard({ post, commentsExpanded = false }) {
                   required
                 />
               </div>
-              
+
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
@@ -535,6 +607,37 @@ export default function PostCard({ post, commentsExpanded = false }) {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {editOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <form onSubmit={handleSaveEdit} style={{
+            backgroundColor: 'white', padding: 20, borderRadius: 8, width: '90%', maxWidth: 420
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Gönderiyi Düzenle</h3>
+            <div style={{ marginBottom: 12 }}>
+              <label>Başlık</label>
+              <input value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 4 }} />
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label>Açıklama</label>
+              <textarea value={editDescription} onChange={(e)=>setEditDescription(e.target.value)} rows={4} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 4 }} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label>Fiyat</label>
+              <input type="number" step="0.01" min="0" value={editPrice} onChange={(e)=>setEditPrice(e.target.value)} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 4 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={()=>setEditOpen(false)} style={{ padding: '8px 16px', background: '#f5f5f5', border: 0, borderRadius: 4, cursor: 'pointer' }}>İptal</button>
+              <button type="submit" disabled={editSaving} style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 0, borderRadius: 4, cursor: editSaving ? 'not-allowed' : 'pointer' }}>
+                {editSaving ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </article>

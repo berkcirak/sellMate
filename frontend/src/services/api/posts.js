@@ -28,3 +28,14 @@ export const getPostByCommentId = async (commentId) => {
   const res = await apiClient.get(`/posts/bycomment/${commentId}`);
   return res.data?.data;
 };
+
+export const updatePost = async (postId, payload) => {
+  const res = await apiClient.put(`/posts/${postId}`, payload);
+  return res.data?.data;
+};
+
+// YENİ: silme
+export const deletePost = async (postId) => {
+  const res = await apiClient.delete(`/posts/${postId}`);
+  return res.data;
+};
