@@ -1,5 +1,7 @@
 package com.example.sellmate.event;
 
+import com.example.sellmate.entity.enums.NotificationType;
+
 import java.time.Instant;
 
 public record OfferDecisionEvent(
@@ -8,7 +10,7 @@ public record OfferDecisionEvent(
         Long postId,
         Long postOwnerId,
         Long bidderUserId,
-        OfferDecision decision,
+        NotificationType decision,
         Instant occurredAt
 ) {
 }
