@@ -60,7 +60,7 @@ public class NotificationConsumer {
                 : name + " teklifini reddetti";
         NotificationResponse payload = new NotificationResponse(e.eventId(), e.decision(), message,
                 e.postOwnerId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        realTimeNotifier.pushToUser(e.bidderUserId(), payload);
     }
 
 }
