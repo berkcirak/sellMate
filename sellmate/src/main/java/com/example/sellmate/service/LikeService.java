@@ -5,6 +5,7 @@ import com.example.sellmate.dto.response.LikeResponse;
 import com.example.sellmate.entity.Like;
 import com.example.sellmate.entity.Post;
 import com.example.sellmate.entity.User;
+import com.example.sellmate.event.LikeCreatedEvent;
 import com.example.sellmate.exception.like.LikeAlreadyExistsException;
 import com.example.sellmate.exception.like.LikeNotFoundException;
 import com.example.sellmate.exception.post.PostNotFoundException;
@@ -13,7 +14,9 @@ import com.example.sellmate.repository.LikeRepository;
 import com.example.sellmate.repository.PostRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,11 +26,13 @@ public class LikeService {
     private final UserService userService;
     private final PostRepository postRepository;
     private final LikeMapper likeMapper;
-    public LikeService(LikeRepository likeRepository, UserService userService, PostRepository postRepository, LikeMapper likeMapper){
+    private final DomainEventPublisher eventPublisher;
+    public LikeService(LikeRepository likeRepository, UserService userService, PostRepository postRepository, LikeMapper likeMapper, DomainEventPublisher eventPublisher){
         this.likeRepository=likeRepository;
         this.userService=userService;
         this.postRepository=postRepository;
         this.likeMapper=likeMapper;
+        this.eventPublisher = eventPublisher;
     }
     public LikeResponse likePost(CreateLikeRequest request){
         User currentUser = userService.getCurrentUser();
@@ -37,6 +42,15 @@ public class LikeService {
         }
         Like like = new Like(currentUser, post);
         Like savedLink = likeRepository.save(like);
+        Long postOwnerId = post.getUser().getId();
+        if (!currentUser.getId().equals(postOwnerId)){
+            LikeCreatedEvent event = new LikeCreatedEvent(UUID.randomUUID().toString(),
+                    post.getId(),
+                    postOwnerId,
+                    currentUser.getId(),
+                    Instant.now());
+            eventPublisher.publishLike(event);
+        }
         return likeMapper.toResponse(savedLink);
     }
     public void unlikePost(Long postId){
