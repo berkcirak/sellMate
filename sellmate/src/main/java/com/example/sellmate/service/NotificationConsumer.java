@@ -14,11 +14,12 @@ public class NotificationConsumer {
 
     private final RealTimeNotifier realTimeNotifier;
     private final UserRepository userRepository;
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(NotificationConsumer.class);
+    private final NotificationService notificationService;
 
-    public NotificationConsumer(RealTimeNotifier realTimeNotifier, UserRepository userRepository) {
+    public NotificationConsumer(RealTimeNotifier realTimeNotifier, UserRepository userRepository, NotificationService notificationService) {
         this.realTimeNotifier = realTimeNotifier;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
     private String fullName(Long userId){
         return userRepository.findById(userId)

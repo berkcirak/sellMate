@@ -83,11 +83,11 @@ public class Notification extends BaseEntity {
         this.message = message;
     }
 
-    public Boolean getRead() {
+    public Boolean getIsRead() {
         return isRead;
     }
 
-    public void setRead(Boolean read) {
+    public void setIsRead(Boolean read) {
         isRead = read;
     }
 }
