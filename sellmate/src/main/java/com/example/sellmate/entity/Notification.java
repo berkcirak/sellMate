@@ -2,10 +2,10 @@ package com.example.sellmate.entity;
 
 import com.example.sellmate.entity.base.BaseEntity;
 import com.example.sellmate.entity.enums.NotificationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "notifications")
 public class Notification extends BaseEntity {
 
     @Column(nullable = false, updatable = false, unique = true)
@@ -25,14 +25,14 @@ public class Notification extends BaseEntity {
     private Boolean isRead = false;
     public Notification(){}
 
-    public Notification(String eventId, Long recipientId, Long actorId, Long postId, NotificationType type, String message, Boolean isRead) {
+    public Notification(String eventId, Long recipientId, Long actorId, Long postId, NotificationType type, String message) {
         this.eventId = eventId;
         this.recipientId = recipientId;
         this.actorId = actorId;
         this.postId = postId;
         this.type = type;
         this.message = message;
-        this.isRead = isRead;
+        this.isRead = false;
     }
 
     public String getEventId() {
