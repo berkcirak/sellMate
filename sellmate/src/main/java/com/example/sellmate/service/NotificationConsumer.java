@@ -14,6 +14,7 @@ public class NotificationConsumer {
 
     private final RealTimeNotifier realTimeNotifier;
     private final UserRepository userRepository;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(NotificationConsumer.class);
 
     public NotificationConsumer(RealTimeNotifier realTimeNotifier, UserRepository userRepository) {
         this.realTimeNotifier = realTimeNotifier;

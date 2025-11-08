@@ -6,13 +6,16 @@ import com.example.sellmate.dto.response.CommentResponse;
 import com.example.sellmate.entity.Comment;
 import com.example.sellmate.entity.Post;
 import com.example.sellmate.entity.User;
+import com.example.sellmate.event.CommentCreatedEvent;
 import com.example.sellmate.exception.comment.CommentNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
 import com.example.sellmate.mapper.CommentMapper;
 import com.example.sellmate.repository.CommentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,12 +25,14 @@ public class CommentService {
     private final UserService userService;
     private final PostService postService;
     private final CommentRepository commentRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
-    public CommentService(CommentMapper commentMapper, UserService userService, PostService postService, CommentRepository commentRepository){
+    public CommentService(CommentMapper commentMapper, UserService userService, PostService postService, CommentRepository commentRepository, DomainEventPublisher domainEventPublisher){
         this.commentMapper=commentMapper;
         this.userService=userService;
         this.postService=postService;
         this.commentRepository=commentRepository;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     public CommentResponse createComment(CreateCommentRequest request){
@@ -36,6 +41,17 @@ public class CommentService {
 
         Comment comment = commentMapper.toEntity(request,currentUser,post);
         Comment savedComment = commentRepository.save(comment);
+        Long postOwnerId = post.getUser().getId();
+        if (!currentUser.getId().equals(postOwnerId)){
+            CommentCreatedEvent event = new CommentCreatedEvent(
+                    UUID.randomUUID().toString(),
+                    post.getId(),
+                    postOwnerId,
+                    currentUser.getId(),
+                    savedComment.getContent(),
+                    Instant.now());
+            domainEventPublisher.publishComment(event);
+        }
         return commentMapper.toResponse(savedComment);
     }
     public List<CommentResponse> getCommentsByPost(Long postId){

@@ -5,8 +5,11 @@ import com.example.sellmate.entity.Offer;
 import com.example.sellmate.entity.Order;
 import com.example.sellmate.entity.Post;
 import com.example.sellmate.entity.Wallet;
+import com.example.sellmate.entity.enums.NotificationType;
 import com.example.sellmate.entity.enums.OfferStatus;
 import com.example.sellmate.entity.enums.OrderStatus;
+import com.example.sellmate.event.OfferDecisionEvent;
+import com.example.sellmate.event.OrderPlacedEvent;
 import com.example.sellmate.exception.offer.OfferNotFoundException;
 import com.example.sellmate.exception.order.OrderNotFoundException;
 import com.example.sellmate.exception.post.PostNotFoundException;
@@ -21,8 +24,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -33,13 +38,15 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final WalletRepository walletRepository;
     private final OfferRepository offerRepository;
-    public OrderService(UserService userService, PostRepository postRepository, OrderRepository orderRepository, OrderMapper orderMapper, WalletRepository walletRepository, OfferRepository offerRepository) {
+    private final DomainEventPublisher eventPublisher;
+    public OrderService(UserService userService, PostRepository postRepository, OrderRepository orderRepository, OrderMapper orderMapper, WalletRepository walletRepository, OfferRepository offerRepository, DomainEventPublisher eventPublisher) {
         this.userService = userService;
         this.postRepository = postRepository;
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.walletRepository = walletRepository;
         this.offerRepository = offerRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -64,6 +71,15 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         post.setAvailable(false);
         postRepository.save(post);
+        OrderPlacedEvent event = new OrderPlacedEvent(
+                UUID.randomUUID().toString(),
+                postId,
+                sellerId,
+                buyerId,
+                null,
+                Instant.now()
+        );
+        eventPublisher.publishOrder(event);
         return orderMapper.toResponse(savedOrder);
     }
 
@@ -146,6 +162,25 @@ public class OrderService {
         offerRepository.save(offer);
         post.setAvailable(false);
         postRepository.save(post);
+        OrderPlacedEvent orderEvent = new OrderPlacedEvent(
+                UUID.randomUUID().toString(),
+                post.getId(),
+                sellerId,
+                offer.getBuyerId(),
+                null,
+                Instant.now()
+        );
+        eventPublisher.publishOrder(orderEvent);
+        OfferDecisionEvent offerEvent = new OfferDecisionEvent(
+                UUID.randomUUID().toString(),
+                offerId,
+                offer.getPostId(),
+                sellerId,
+                offer.getBuyerId(),
+                NotificationType.OFFER_ACCEPTED,
+                Instant.now()
+        );
+        eventPublisher.publishOfferDecision(offerEvent);
         return orderMapper.toResponse(savedOrder);
     }
 }

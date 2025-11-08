@@ -5,7 +5,10 @@ import com.example.sellmate.dto.response.OfferResponse;
 import com.example.sellmate.dto.response.OrderResponse;
 import com.example.sellmate.entity.Offer;
 import com.example.sellmate.entity.Post;
+import com.example.sellmate.entity.enums.NotificationType;
 import com.example.sellmate.entity.enums.OfferStatus;
+import com.example.sellmate.event.OfferCreatedEvent;
+import com.example.sellmate.event.OfferDecisionEvent;
 import com.example.sellmate.exception.offer.OfferNotFoundException;
 import com.example.sellmate.exception.post.PostNotFoundException;
 import com.example.sellmate.exception.user.UnauthorizedException;
@@ -15,6 +18,9 @@ import com.example.sellmate.repository.PostRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Service
 public class OfferService {
 
@@ -23,13 +29,15 @@ public class OfferService {
     private final OfferRepository offerRepository;
     private final OfferMapper offerMapper;
     private final OrderService orderService;
+    private final DomainEventPublisher eventPublisher;
 
-    public OfferService(UserService userService, PostRepository postRepository, OfferRepository offerRepository, OfferMapper offerMapper, OrderService orderService) {
+    public OfferService(UserService userService, PostRepository postRepository, OfferRepository offerRepository, OfferMapper offerMapper, OrderService orderService, DomainEventPublisher eventPublisher) {
         this.userService = userService;
         this.postRepository = postRepository;
         this.offerRepository = offerRepository;
         this.offerMapper = offerMapper;
         this.orderService = orderService;
+        this.eventPublisher = eventPublisher;
     }
 
 
@@ -49,6 +57,16 @@ public class OfferService {
         offer.setStatus(OfferStatus.PENDING);
         offer.setPostId(postId);
         Offer savedOffer = offerRepository.save(offer);
+        OfferCreatedEvent event = new OfferCreatedEvent(
+                UUID.randomUUID().toString(),
+                postId,
+                post.getUser().getId(),
+                buyerId,
+                savedOffer.getId(),
+                savedOffer.getOfferedPrice(),
+                Instant.now()
+        );
+        eventPublisher.publishOfferCreated(event);
         return offerMapper.toResponse(savedOffer);
     }
     @Transactional
@@ -63,6 +81,16 @@ public class OfferService {
             throw new IllegalStateException("Offer is not pending");
         }
         offer.setStatus(OfferStatus.REJECTED);
+        OfferDecisionEvent event = new OfferDecisionEvent(
+                UUID.randomUUID().toString(),
+                offerId,
+                post.getId(),
+                post.getUser().getId(),
+                offer.getBuyerId(),
+                NotificationType.OFFER_REJECTED,
+                Instant.now()
+        );
+        eventPublisher.publishOfferDecision(event);
         return offerMapper.toResponse(offerRepository.save(offer));
     }
     @Transactional
