@@ -29,30 +29,65 @@ public class NotificationConsumer {
     @RabbitListener(queues = "notification.service.queue")
     public void onLike(LikeCreatedEvent e){
         String name = fullName(e.actorUserId());
-        NotificationResponse payload = new NotificationResponse(e.eventId(), NotificationType.LIKE,
-                name + " gönderini beğendi.", e.actorUserId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        String message = name + " gönderini beğendi.";
+        NotificationResponse payload = notificationService.createIfNotExist(
+                e.eventId(),
+                e.postOwnerId(),
+                e.actorUserId(),
+                e.postId(),
+                NotificationType.LIKE,
+                message);
+        if (payload != null){
+            realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        }
     }
     @RabbitListener(queues = "notification.service.queue")
     public void onComment(CommentCreatedEvent e){
         String name = fullName(e.actorUserId());
-        NotificationResponse payload = new NotificationResponse(e.eventId(), NotificationType.COMMENT,
-                name+" gönderine yorum yaptı.", e.actorUserId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        String message = name + " gönderine yorum yaptı.";
+        NotificationResponse payload = notificationService.createIfNotExist(
+                e.eventId(),
+                e.postOwnerId(),
+                e.actorUserId(),
+                e.postId(),
+                NotificationType.COMMENT,
+                message
+        );
+        if (payload != null){
+            realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        }
     }
     @RabbitListener(queues = "notification.service.queue")
     public void onOrder(OrderPlacedEvent e){
         String name = fullName(e.actorUserId());
-        NotificationResponse payload = new NotificationResponse(e.eventId(), NotificationType.ORDER,
-                name+" gönderin için sipariş verdi.", e.actorUserId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        String message = name + " gönderin için sipariş verdi.";
+        NotificationResponse payload = notificationService.createIfNotExist(
+                e.eventId(),
+                e.postOwnerId(),
+                e.actorUserId(),
+                e.postId(),
+                NotificationType.ORDER,
+                message
+        );
+        if (payload != null){
+            realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        }
     }
     @RabbitListener(queues = "notification.service.queue")
     public void onOfferCreated(OfferCreatedEvent e){
         String name = fullName(e.bidderUserId());
-        NotificationResponse payload = new NotificationResponse(e.eventId(), NotificationType.OFFER_CREATED,
-                name+" gönderin için bir teklif verdi: " + e.amount(), e.bidderUserId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        String message = name + " gönderin için bir teklif verdi.";
+        NotificationResponse payload = notificationService.createIfNotExist(
+                e.eventId(),
+                e.postOwnerId(),
+                e.bidderUserId(),
+                e.postId(),
+                NotificationType.OFFER_CREATED,
+                message
+        );
+        if (payload != null){
+            realTimeNotifier.pushToUser(e.postOwnerId(), payload);
+        }
     }
     @RabbitListener(queues = "notification.service.queue")
     public void onOfferDecision(OfferDecisionEvent e){
@@ -60,9 +95,17 @@ public class NotificationConsumer {
         String message = e.decision() == NotificationType.OFFER_ACCEPTED
                 ? name + " teklifini kabul etti"
                 : name + " teklifini reddetti";
-        NotificationResponse payload = new NotificationResponse(e.eventId(), e.decision(), message,
-                e.postOwnerId(), e.postId(), Instant.now());
-        realTimeNotifier.pushToUser(e.bidderUserId(), payload);
+        NotificationResponse payload = notificationService.createIfNotExist(
+                e.eventId(),
+                e.bidderUserId(),
+                e.postOwnerId(),
+                e.postId(),
+                e.decision(),
+                message
+        );
+        if (payload != null){
+            realTimeNotifier.pushToUser(e.bidderUserId(), payload);
+        }
     }
 
 }
