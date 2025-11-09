@@ -1,3 +1,4 @@
+// frontend/src/components/messages/ConversationList.jsx - Güncelle
 import { useEffect, useState, useCallback } from 'react';
 import { getMyConversations } from '../../services/api/conversation';
 import { getUserById, getMyProfile } from '../../services/api/user';
@@ -35,14 +36,11 @@ export default function ConversationList({ onSelectConversation, selectedConvers
       setLoading(true);
       setError(null);
       
-      // Current user ID'yi al
       const myProfile = await getMyProfile();
       const currentUserId = myProfile?.id;
       
       const data = await getMyConversations();
-      setConversations(data || []);
-
-      // Her konuşma için diğer kullanıcının bilgilerini ve son mesajı al
+      
       const userPromises = (data || []).map(async (conv) => {
         let otherUserId;
         
@@ -60,36 +58,44 @@ export default function ConversationList({ onSelectConversation, selectedConvers
             getMessagesByConversation(conv.id)
           ]);
           
+          if (!user) {
+            return null; // Silinmiş kullanıcı - filtrele
+          }
+          
           const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : null;
           
           return { 
             conversationId: conv.id, 
+            conversation: conv, 
             user, 
             lastMessage 
           };
         } catch (error) {
-          console.error('Error fetching user or messages:', error);
-          return { 
-            conversationId: conv.id, 
-            user: null, 
-            lastMessage: null 
-          };
+          console.error('Error loading conversation:', error);
+          console.log('Kullanıcı bulunamadı (muhtemelen silinmiş):', otherUserId);
+          return null; 
         }
       });
 
       const results = await Promise.all(userPromises);
+      
+      const validResults = results.filter(result => result !== null);
+      
+      const validConversations = validResults.map(r => r.conversation);
+      setConversations(validConversations);
+      
       const usersMap = {};
       const messagesMap = {};
       
-      results.forEach(({ conversationId, user, lastMessage }) => {
+      validResults.forEach(({ conversationId, user, lastMessage }) => {
         usersMap[conversationId] = user;
         messagesMap[conversationId] = lastMessage;
       });
       
       setConversationUsers(usersMap);
       setLastMessages(messagesMap);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
+    } catch (err) {
+      console.error('Error loading conversations:', err);
       setError('Konuşmalar yüklenirken bir hata oluştu');
     } finally {
       setLoading(false);
@@ -169,6 +175,10 @@ export default function ConversationList({ onSelectConversation, selectedConvers
             const lastMessage = lastMessages[conversation.id];
             const isSelected = selectedConversationId === conversation.id;
             
+            if (!user) {
+              return null;
+            }
+            
             return (
               <div
                 key={conversation.id}
@@ -186,7 +196,7 @@ export default function ConversationList({ onSelectConversation, selectedConvers
                 </div>
                 <div className="conversation-info">
                   <div className="conversation-name">
-                    {user ? `${user.firstName} ${user.lastName}` : 'Bilinmeyen Kullanıcı'}
+                    {user.firstName} {user.lastName}
                   </div>
                   <div className="conversation-preview">
                     {lastMessage ? (
